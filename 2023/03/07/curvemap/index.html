@@ -1,0 +1,484 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="LiuXiaoJie"><title>Openlayers+谷歌图源（拟合算法） 实现绘制一条曲线功能 · 江苏小小刘</title><meta name="description" content="技术支持openlayers:(6.13.0)
+谷歌开源图层：https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&amp;amp;size=1&amp;amp;style=7&amp;amp;x={x}&amp;amp;y={y}&amp;amp;z={z}
+源码地址：http"><meta name="keywords"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="baidu-site-verification" content="code-8T70VyNDfa"><meta name="msvalidate.01" content="1227901851D75DB8DBC59424B1AE7021"><meta name="renderer" content="webkit"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.css"><link rel="stylesheet" href="/css/my_style.css"><link rel="stylesheet" href="/font_awesome/css/brands.min.css"><link rel="stylesheet" href="/font_awesome/css/solid.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><script src="/js/jquery.js"></script><script src="/js/store_set.js"></script><script>window.localDataStore.get("is_black")==='true'?$('html').addClass('black'):$('html').removeClass('black');
+var now = new Date();
+var month = now.getMonth() + 1;     //月
+var day = now.getDate();            //日
+var clock = '';  
+if(month < 10) clock += "0";
+clock += month + "-";
+if(day < 10) clock += "0";
+clock += day;
+var grayDayList = '05-12,09-18,12-13'.split(',');
+if(grayDayList.indexOf(clock)>=0) $('html').addClass('gray');</script><meta name="generator" content="Hexo 5.4.0"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/2.png" style="width:127px;"><h3 title=""><a href="/">江苏小小刘</a></h3><div class="description"><p>生命如花，一边盛开一边凋零!<br> Life is like a flower, blooming and withering at the same time.</p></div></div></div><ul class="social-links"><li><a target="_blank" rel="noopener" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0"><div style="width:19px;height:19px;display:inline-block;position:relative;"><div class="invert" style="width:19px;height:19px;display:inline-block;background-image:url('/font_awesome/svgs/brands/favicon.ico');background-repeat:no-repeat;background-size:80% 80%;background-position:50% 50%;position:absolute;top:4px;left:0px;cursor:pointer;"></div></div></a></li></ul><ul class="blog-links"></ul><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/archives">归档</a></li><li><a href="/tags">标签</a></li><li><a href="/guestbook">留言</a></li><li><a href="/about">关于</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>Openlayers+谷歌图源（拟合算法） 实现绘制一条曲线功能</a></h3></div><div class="post-content"><p><img src="/images/curvemap/1.png" alt="1"></p>
+<h3 id="技术支持"><a href="#技术支持" class="headerlink" title="技术支持"></a>技术支持</h3><p>openlayers:(6.13.0)</p>
+<p>谷歌开源图层：<a target="_blank" rel="noopener" href="https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;style=7&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D">https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&amp;size=1&amp;style=7&amp;x={x}&amp;y={y}&amp;z={z}</a></p>
+<p>源码地址：<a target="_blank" rel="noopener" href="https://gitee.com/lxj-1996/oldemo1.git">https://gitee.com/lxj-1996/oldemo1.git</a></p>
+<p>以及一个拟合算法（最后附上）</p>
+<p>核心思路：</p>
+<p>利用样式渲染，将原来的几个点渲染成曲线，在style样式中进行操作，数据的存取还是原来的关键点，只是通过样式渲染，渲染成曲线。</p>
+<p><img src="/images/curvemap/2.png" alt="2"></p>
+<p>拟合算法：</p>
+<p>   // var ratio_=0.03</p>
+<p>   // var ratio2=0.15</p>
+<p>   // /**</p>
+<p>   //  *</p>
+<p>   //  *</p>
+<p>   //  * @class Vector2D</p>
+<p>   //  * @extends {Array}</p>
+<p>   //  */</p>
+<p>   //  class Vector2D extends Array {</p>
+<p>   //   /**</p>
+<p>   //   * Creates an instance of Vector2D.</p>
+<p>   //   * @param {number} [x=1]</p>
+<p>   //   * @param {number} [y=0]</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   * */</p>
+<p>   //   constructor(x = 1, y = 0) {</p>
+<p>   //    super();</p>
+<p>   //    this.x = x;</p>
+<p>   //    this.y = y;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   * @param {number} v</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   set x(v) {</p>
+<p>   //    this[0] = v;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   * @param {number} v</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   set y(v) {</p>
+<p>   //    this[1] = v;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @readonly</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   get x() {</p>
+<p>   //    return this[0];</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @readonly</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   get y() {</p>
+<p>   //    return this[1];</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @readonly</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   get length() {</p>
+<p>   //    return Math.hypot(this.x, this.y);</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @readonly</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   get dir() {</p>
+<p>   //    return Math.atan2(this.y, this.x);</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   copy() {</p>
+<p>   //    return new Vector2D(this.x, this.y);</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} v</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   add(v) {</p>
+<p>   //    this.x += v.x;</p>
+<p>   //    this.y += v.y;</p>
+<p>   //    return this;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} v</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   sub(v) {</p>
+<p>   //    this.x -= v.x;</p>
+<p>   //    this.y -= v.y;</p>
+<p>   //    return this;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} a</p>
+<p>   //   * @return {Vector2D}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   scale(a) {</p>
+<p>   //    this.x *= a;</p>
+<p>   //    this.y *= a;</p>
+<p>   //    return this;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} rad</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   rotate(rad) {</p>
+<p>   //    const c = Math.cos(rad);</p>
+<p>   //    const s = Math.sin(rad);</p>
+<p>   //    const [x, y] = this;</p>
+<p>   //    this.x = x * c + y * -s;</p>
+<p>   //    this.y = x * s + y * c;</p>
+<p>   //    return this;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} v</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   cross(v) {</p>
+<p>   //    return this.x * v.y - v.x * this.y;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   *</p>
+<p>   //   *</p>
+<p>   //   * @param {*} v</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   dot(v) {</p>
+<p>   //    return this.x * v.x + v.y * this.y;</p>
+<p>   //   }</p>
+<p>   //   /**</p>
+<p>   //   * 归一</p>
+<p>   //   *</p>
+<p>   //   * @return {*}</p>
+<p>   //   * @memberof Vector2D</p>
+<p>   //   */</p>
+<p>   //   normalize() {</p>
+<p>   //    return this.scale(1 / this.length);</p>
+<p>   //   }</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 向量的加法</p>
+<p>   //  *</p>
+<p>   //  * @param {*} vec1</p>
+<p>   //  * @param {*} vec2</p>
+<p>   //  * @return {Vector2D}</p>
+<p>   //  */</p>
+<p>   //  function vector2dPlus(vec1, vec2) {</p>
+<p>   //   return new Vector2D(vec1.x + vec2.x, vec1.y + vec2.y);</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 向量的减法</p>
+<p>   //  *</p>
+<p>   //  * @param {*} vec1</p>
+<p>   //  * @param {*} vec2</p>
+<p>   //  * @return {Vector2D}</p>
+<p>   //  */</p>
+<p>   //  function vector2dMinus(vec1, vec2) {</p>
+<p>   //   return new Vector2D(vec1.x - vec2.x, vec1.y - vec2.y);</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  *</p>
+<p>   //  *</p>
+<p>   //  * @param {number} p0</p>
+<p>   //  * @param {number} p1</p>
+<p>   //  * @param {number} p2</p>
+<p>   //  * @param {number} t</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function bezier2P(p0, p1, p2, t) {</p>
+<p>   //   const P0 = p0 * Math.pow(1 - t, 2);</p>
+<p>   //   const P1 = p1 * 2 * t * (1 - t);</p>
+<p>   //   const P2 = p2 * t * t;</p>
+<p>   //   return P0 + P1 + P2;</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  *</p>
+<p>   //  *</p>
+<p>   //  * @param {Point} p0</p>
+<p>   //  * @param {Point} p1</p>
+<p>   //  * @param {Point} p2</p>
+<p>   //  * @param {number} num</p>
+<p>   //  * @param {number} tick</p>
+<p>   //  * @return {*}  {Point}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function getBezierNowPoint2P(</p>
+<p>   //   p0,</p>
+<p>   //   p1,</p>
+<p>   //   p2,</p>
+<p>   //   num,</p>
+<p>   //   tick,</p>
+<p>   //  ) {</p>
+<p>   //   return {</p>
+<p>   //    x: bezier2P(p0.x, p1.x, p2.x, num * tick),</p>
+<p>   //    y: bezier2P(p0.y, p1.y, p2.y, num * tick),</p>
+<p>   //   };</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 生成二次方贝塞尔曲线顶点数据</p>
+<p>   //  *</p>
+<p>   //  * @param {Point} p0</p>
+<p>   //  * @param {Point} p1</p>
+<p>   //  * @param {Point} p2</p>
+<p>   //  * @param {number} [num=100]</p>
+<p>   //  * @param {number} [tick=1]</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function create2PBezier(</p>
+<p>   //   p0,</p>
+<p>   //   p1,</p>
+<p>   //   p2,</p>
+<p>   //   num = 10,</p>
+<p>   //   tick = 1,</p>
+<p>   //  ) {</p>
+<p>   //   const t = tick / (num - 1);</p>
+<p>   //   const points = [];</p>
+<p>   //   for (let i = 0; i &lt; num; i++) {</p>
+<p>   //    const point = getBezierNowPoint2P(p0, p1, p2, i, t);</p>
+<p>   //    points.push({</p>
+<p>   //     x: point.x,</p>
+<p>   //     y: point.y</p>
+<p>   //    });</p>
+<p>   //   }</p>
+<p>   //   return points;</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 三次方塞尔曲线公式</p>
+<p>   //  *</p>
+<p>   //  * @param {number} p0</p>
+<p>   //  * @param {number} p1</p>
+<p>   //  * @param {number} p2</p>
+<p>   //  * @param {number} p3</p>
+<p>   //  * @param {number} t</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function bezier3P(p0, p1, p2, p3, t) {</p>
+<p>   //   const P0 = p0 * Math.pow(1 - t, 3);</p>
+<p>   //   const P1 = 3 * p1 * t * Math.pow(1 - t, 2);</p>
+<p>   //   const P2 = 3 * p2 * Math.pow(t, 2) * (1 - t);</p>
+<p>   //   const P3 = p3 * Math.pow(t, 3);</p>
+<p>   //   return P0 + P1 + P2 + P3;</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 获取坐标</p>
+<p>   //  *</p>
+<p>   //  * @param {Point} p0</p>
+<p>   //  * @param {Point} p1</p>
+<p>   //  * @param {Point} p2</p>
+<p>   //  * @param {Point} p3</p>
+<p>   //  * @param {number} num</p>
+<p>   //  * @param {number} tick</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function getBezierNowPoint3P(</p>
+<p>   //   p0,</p>
+<p>   //   p1,</p>
+<p>   //   p2,</p>
+<p>   //   p3,</p>
+<p>   //   num,</p>
+<p>   //   tick,</p>
+<p>   //  ) {</p>
+<p>   //   return {</p>
+<p>   //    x: bezier3P(p0.x, p1.x, p2.x, p3.x, num * tick),</p>
+<p>   //    y: bezier3P(p0.y, p1.y, p2.y, p3.y, num * tick),</p>
+<p>   //   };</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 生成三次方贝塞尔曲线顶点数据</p>
+<p>   //  *</p>
+<p>   //  * @param {Point} p0 起始点  { x : number, y : number}</p>
+<p>   //  * @param {Point} p1 控制点1 { x : number, y : number}</p>
+<p>   //  * @param {Point} p2 控制点2 { x : number, y : number}</p>
+<p>   //  * @param {Point} p3 终止点  { x : number, y : number}</p>
+<p>   //  * @param {number} [num=100]</p>
+<p>   //  * @param {number} [tick=1]</p>
+<p>   //  * @return {Point []}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function create3PBezier(</p>
+<p>   //   p0,</p>
+<p>   //   p1,</p>
+<p>   //   p2,</p>
+<p>   //   p3,</p>
+<p>   //   num = 10,</p>
+<p>   //   tick = 1,</p>
+<p>   //  ) {</p>
+<p>   //   const pointMum = num;</p>
+<p>   //   const _tick = tick;</p>
+<p>   //   const t = _tick / (pointMum - 1);</p>
+<p>   //   const points = [];</p>
+<p>   //   for (let i = 0; i &lt; pointMum; i++) {</p>
+<p>   //    const point = getBezierNowPoint3P(p0, p1, p2, p3, i, t);</p>
+<p>   //    points.push({</p>
+<p>   //     x: point.x,</p>
+<p>   //     y: point.y</p>
+<p>   //    });</p>
+<p>   //   }</p>
+<p>   //   return points;</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 生成平滑曲线所需的控制点</p>
+<p>   //  *</p>
+<p>   //  * @param {Vector2D} p1</p>
+<p>   //  * @param {Vector2D} pt</p>
+<p>   //  * @param {Vector2D} p2</p>
+<p>   //  * @param {number} [ratio=0.3]</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function createSmoothLineControlPoint(</p>
+<p>   //   p1,</p>
+<p>   //   pt,</p>
+<p>   //   p2,</p>
+<p>   //   ratio = ratio_,</p>
+<p>   //  ) {</p>
+<p>   //   const vec1T = vector2dMinus(p1, pt);</p>
+<p>   //   const vecT2 = vector2dMinus(p1, pt);</p>
+<p>   //   const len1 = vec1T.length;</p>
+<p>   //   const len2 = vecT2.length;</p>
+<p>   //   const v = len1 / len2;</p>
+<p>   //   let delta;</p>
+<p>   //   if (v &gt; 1) {</p>
+<p>   //    delta = vector2dMinus(</p>
+<p>   //     p1,</p>
+<p>   //     vector2dPlus(pt, vector2dMinus(p2, pt).scale(1 / v)),</p>
+<p>   //    );</p>
+<p>   //   } else {</p>
+<p>   //    delta = vector2dMinus(</p>
+<p>   //     vector2dPlus(pt, vector2dMinus(p1, pt).scale(v)),</p>
+<p>   //     p2,</p>
+<p>   //    );</p>
+<p>   //   }</p>
+<p>   //   delta = delta.scale(ratio);</p>
+<p>   //   const control1 = {</p>
+<p>   //    x: vector2dPlus(pt, delta).x,</p>
+<p>   //    y: vector2dPlus(pt, delta).y,</p>
+<p>   //   };</p>
+<p>   //   const control2 = {</p>
+<p>   //    x: vector2dMinus(pt, delta).x,</p>
+<p>   //    y: vector2dMinus(pt, delta).y,</p>
+<p>   //   };</p>
+<p>   //   return {</p>
+<p>   //    control1,</p>
+<p>   //    control2</p>
+<p>   //   };</p>
+<p>   //  }</p>
+<p>   //  //数据格式转化</p>
+<p>   //  function changePToX(points) {</p>
+<p>   //   var x = 0</p>
+<p>   //   if (points[points.length - 1].toString() == points[points.length - 2].toString()) {</p>
+<p>   //    x = 1</p>
+<p>   //   }</p>
+<p>   //   var all = []</p>
+<p>   //   for (var i = 0; i &lt; points.length - x; i++) {</p>
+<p>   //    all.push({</p>
+<p>   //     x: points[i][0],</p>
+<p>   //     y: points[i][1],</p>
+<p>   //    })</p>
+<p>   //   }</p>
+<p>   //   return all</p>
+<p>   //  }</p>
+<p>   //  function changeXtoP(points) {</p>
+<p>   //   var all = []</p>
+<p>   //   for (var i = 0; i &lt; points.length; i++) {</p>
+<p>   //    all.push([points[i].x, points[i].y])</p>
+<p>   //   }</p>
+<p>   //   return all</p>
+<p>   //  }</p>
+<p>   //  /**</p>
+<p>   //  * 平滑曲线生成</p>
+<p>   //  *</p>
+<p>   //  * @param {Point []} points</p>
+<p>   //  * @param {number} ratio</p>
+<p>   //  * @return {*}</p>
+<p>   //  * @memberof Path</p>
+<p>   //  */</p>
+<p>   //  function createSmoothLine(points, ratio = ratio2) {</p>
+<p>   //   var points_=points</p>
+<p>   //   var points = changePToX(points)</p>
+<p>   //   const len = points.length;</p>
+<p>   //   let resultPoints = [];</p>
+<p>   //   const controlPoints = [];</p>
+<p>   //   if (len &lt; 3) return points_;</p>
+<p>   //   for (let i = 0; i &lt; len - 2; i++) {</p>
+<p>   //    const {</p>
+<p>   //     control1,</p>
+<p>   //     control2</p>
+<p>   //    } = createSmoothLineControlPoint(</p>
+<p>   //     new Vector2D(points[i].x, points[i].y),</p>
+<p>   //     new Vector2D(points[i + 1].x, points[i + 1].y),</p>
+<p>   //     new Vector2D(points[i + 2].x, points[i + 2].y),</p>
+<p>   //     ratio,</p>
+<p>   //    );</p>
+<p>   //    controlPoints.push(control1);</p>
+<p>   //    controlPoints.push(control2);</p>
+<p>   //    let points1;</p>
+<p>   //    let points2;</p>
+<p>   //    // 首端控制点只用一个</p>
+<p>   //    if (i === 0) {</p>
+<p>   //     points1 = create2PBezier(points[i], control1, points[i + 1], 50);</p>
+<p>   //    } else {</p>
+<p>   //     points1 = create3PBezier(</p>
+<p>   //      points[i],</p>
+<p>   //      controlPoints[2 * i - 1],</p>
+<p>   //      control1,</p>
+<p>   //      points[i + 1],</p>
+<p>   //      50,</p>
+<p>   //     );</p>
+<p>   //    }</p>
+<p>   //    // 尾端部分</p>
+<p>   //    if (i + 2 === len - 1) {</p>
+<p>   //     points2 = create2PBezier(</p>
+<p>   //      points[i + 1],</p>
+<p>   //      control2,</p>
+<p>   //      points[i + 2],</p>
+<p>   //      50,</p>
+<p>   //     );</p>
+<p>   //    }</p>
+<p>   //    if (i + 2 === len - 1) {</p>
+<p>   //     resultPoints = […resultPoints, …points1, …points2];</p>
+<p>   //    } else {</p>
+<p>   //     resultPoints = […resultPoints, …points1];</p>
+<p>   //    }</p>
+<p>   //   }</p>
+<p>   //   if(points_.length==2){</p>
+<p>   //    return points_</p>
+<p>   //   }else if(points_.length&gt;=3){</p>
+<p>   //    var pointAll=changeXtoP(resultPoints)</p>
+<p>   //    pointAll[pointAll.length-1]=points_[points_.length-1]</p>
+<p>   //    return pointAll</p>
+<p>   //   }</p>
+<p>   //  }</p>
+<p>   //  export {</p>
+<p>   //   createSmoothLine</p>
+<p>   //  }</p>
+</div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2023-03-07</span><i class="fa fa-tag"></i><a class="tag" href="/tags/openlayers/" title="openlayers">openlayers </a><span class="leancloud_visitors"></span></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="" onclick="javascript:join_favorite()" ref="sidebar"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="qq"><a class="fa fa-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=,https://lxj-1996.github.io/2023/03/07/curvemap/,江苏小小刘,Openlayers+谷歌图源（拟合算法） 实现绘制一条曲线功能,;"></a></div><div class="wechat"><a class="fa fa-wechat" target="_blank" rel="noopener" href="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://lxj-1996.github.io/2023/03/07/curvemap/"></a></div></div><div class="pagination"><ul class="clearfix"><li class="pre pagbuttons"><a class="btn" role="navigation" href="/2023/03/12/%E9%9C%87%E6%B3%A2%E5%8A%A8%E7%94%BB/" title="震波动画">上一篇</a></li><li class="next pagbuttons"><a class="btn" role="navigation" href="/2023/02/26/uefire/" title="UE5(5.1.1)像素流笔记">下一篇</a></li></ul></div><script src="/js/visitors.js"></script><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div></div></div></div><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script><script src="/js/add-bookmark.js"></script><script src="/js/baidu-tongji.js"></script><script src="/js/baidu-tuisong.js"></script></body></html>

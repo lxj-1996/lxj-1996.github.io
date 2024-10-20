@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="LiuXiaoJie"><title>flex布局 · 江苏小小刘</title><meta name="description" content="flex布局意为”弹性布局”
+.box{
+​    display:flex;
+}
+行内元素也可以使用Flex布局
+.box{
+​    display:inline-flex;
+}
+webkit内核的浏览器，必须加上-webkit前缀
+.box{
+​    display:-webkit-flex"><meta name="keywords"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="baidu-site-verification" content="code-8T70VyNDfa"><meta name="msvalidate.01" content="1227901851D75DB8DBC59424B1AE7021"><meta name="renderer" content="webkit"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.css"><link rel="stylesheet" href="/css/my_style.css"><link rel="stylesheet" href="/font_awesome/css/brands.min.css"><link rel="stylesheet" href="/font_awesome/css/solid.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><script src="/js/jquery.js"></script><script src="/js/store_set.js"></script><script>window.localDataStore.get("is_black")==='true'?$('html').addClass('black'):$('html').removeClass('black');
+var now = new Date();
+var month = now.getMonth() + 1;     //月
+var day = now.getDate();            //日
+var clock = '';  
+if(month < 10) clock += "0";
+clock += month + "-";
+if(day < 10) clock += "0";
+clock += day;
+var grayDayList = '05-12,09-18,12-13'.split(',');
+if(grayDayList.indexOf(clock)>=0) $('html').addClass('gray');</script><meta name="generator" content="Hexo 5.4.0"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/2.png" style="width:127px;"><h3 title=""><a href="/">江苏小小刘</a></h3><div class="description"><p>生命如花，一边盛开一边凋零!<br> Life is like a flower, blooming and withering at the same time.</p></div></div></div><ul class="social-links"><li><a target="_blank" rel="noopener" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0"><div style="width:19px;height:19px;display:inline-block;position:relative;"><div class="invert" style="width:19px;height:19px;display:inline-block;background-image:url('/font_awesome/svgs/brands/favicon.ico');background-repeat:no-repeat;background-size:80% 80%;background-position:50% 50%;position:absolute;top:4px;left:0px;cursor:pointer;"></div></div></a></li></ul><ul class="blog-links"></ul><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/archives">归档</a></li><li><a href="/tags">标签</a></li><li><a href="/guestbook">留言</a></li><li><a href="/about">关于</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>flex布局</a></h3></div><div class="post-content"><p>flex布局意为”弹性布局”</p>
+<p>.box{</p>
+<p>​    display:flex;</p>
+<p>}</p>
+<p>行内元素也可以使用Flex布局</p>
+<p>.box{</p>
+<p>​    display:inline-flex;</p>
+<p>}</p>
+<p>webkit内核的浏览器，必须加上-webkit前缀</p>
+<p>.box{</p>
+<p>​    display:-webkit-flex;</p>
+<p>​    display:flex;</p>
+<p>}</p>
+<h3 id="容器有两根轴，row-column默认横轴"><a href="#容器有两根轴，row-column默认横轴" class="headerlink" title="容器有两根轴，row,column默认横轴"></a>容器有两根轴，row,column默认横轴</h3><p>flex-direction :row(默认)|row-reverse|column|column-reverse</p>
+<p>row:横轴 元素方向从左到右边排列</p>
+<p>column:纵轴 元素方向从上往下排列</p>
+<h5 id="flex-wrap-如果一条轴线上元素排不下，如何换行"><a href="#flex-wrap-如果一条轴线上元素排不下，如何换行" class="headerlink" title="flex-wrap 如果一条轴线上元素排不下，如何换行"></a>flex-wrap 如果一条轴线上元素排不下，如何换行</h5><p>nowrap(默认):不换行</p>
+<p>wrap:换行在第一行上方</p>
+<p>wrap-reverse:换行，第一行在下方</p>
+<h3 id="justify-content属性"><a href="#justify-content属性" class="headerlink" title="justify-content属性"></a>justify-content属性</h3><p>justify-content属性定义了项目在主轴上的对齐方式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">justify-content: flex-start | flex-end | center | space-between | space-around;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-align-items属性"><a href="#3-5-align-items属性" class="headerlink" title="3.5 align-items属性"></a>3.5 align-items属性</h3><p>align-items属性定义项目在交叉轴上如何对齐。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.box &#123;</span><br><span class="line">  align-items: flex-start | flex-end | center | baseline | stretch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="项目的属性"><a href="#项目的属性" class="headerlink" title="项目的属性"></a>项目的属性</h3><p>以下6个属性设置在项目上。</p>
+<p>order属性定义项目的排列顺序。数值越小，排列越靠前，默认为0。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  order: &lt;integer&gt;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-flex-grow属性"><a href="#4-2-flex-grow属性" class="headerlink" title="4.2 flex-grow属性"></a>4.2 flex-grow属性</h3><p>flex-grow属性定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  flex-grow: &lt;number&gt;; /* default 0 */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="flex-shrink属性"><a href="#flex-shrink属性" class="headerlink" title="flex-shrink属性"></a>flex-shrink属性</h3><p>flex-shrink属性定义了项目的缩小比例，默认为1，即如果空间不足，该项目将缩小。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  flex-shrink: &lt;number&gt;; /* default 1 */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="flex-basis属性"><a href="#flex-basis属性" class="headerlink" title="flex-basis属性"></a>flex-basis属性</h3><p>flex-basis属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为auto，即项目的本来大小。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  flex-basis: &lt;length&gt; | auto; /* default auto */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="flex属性"><a href="#flex属性" class="headerlink" title="flex属性"></a>flex属性</h3><p>flex属性是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  flex: none | [ &lt;&#x27;flex-grow&#x27;&gt; &lt;&#x27;flex-shrink&#x27;&gt;? || &lt;&#x27;flex-basis&#x27;&gt; ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="align-self属性"><a href="#align-self属性" class="headerlink" title="align-self属性"></a>align-self属性</h3><p>align-self属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.item &#123;</span><br><span class="line">  align-self: auto | flex-start | flex-end | center | baseline | stretch;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2023-03-12</span><i class="fa fa-tag"></i><a class="tag" href="/tags/css/" title="css">css </a><span class="leancloud_visitors"></span></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="" onclick="javascript:join_favorite()" ref="sidebar"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="qq"><a class="fa fa-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=,https://lxj-1996.github.io/2023/03/12/flex布局/,江苏小小刘,flex布局,;"></a></div><div class="wechat"><a class="fa fa-wechat" target="_blank" rel="noopener" href="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://lxj-1996.github.io/2023/03/12/flex布局/"></a></div></div><div class="pagination"><ul class="clearfix"><li class="pre pagbuttons"><a class="btn" role="navigation" href="/2023/03/27/css3%E5%8F%98%E9%87%8F%E5%88%87%E6%8D%A2%E7%9A%AE%E8%82%A4/" title="css3变量切换皮肤">上一篇</a></li><li class="next pagbuttons"><a class="btn" role="navigation" href="/2023/03/12/%E9%9C%87%E6%B3%A2%E5%8A%A8%E7%94%BB/" title="震波动画">下一篇</a></li></ul></div><script src="/js/visitors.js"></script><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div></div></div></div><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script><script src="/js/add-bookmark.js"></script><script src="/js/baidu-tongji.js"></script><script src="/js/baidu-tuisong.js"></script></body></html>

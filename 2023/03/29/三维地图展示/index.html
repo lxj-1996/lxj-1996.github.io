@@ -1,0 +1,789 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="LiuXiaoJie"><title>三维地图展示 · 江苏小小刘</title><meta name="description" content="一个小案例，纪录下效果，用到了地图json数据，webgl着色器，GLSL语言，以及three.js第三方库，以及一些算法，流光效果，数字光柱，区域分割线，粒子效果模拟宇宙效果，法线贴图应用等。。。
+
+  #webgl-output{
+    position:relative;
+  }
+  #lo"><meta name="keywords"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="baidu-site-verification" content="code-8T70VyNDfa"><meta name="msvalidate.01" content="1227901851D75DB8DBC59424B1AE7021"><meta name="renderer" content="webkit"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.css"><link rel="stylesheet" href="/css/my_style.css"><link rel="stylesheet" href="/font_awesome/css/brands.min.css"><link rel="stylesheet" href="/font_awesome/css/solid.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><script src="/js/jquery.js"></script><script src="/js/store_set.js"></script><script>window.localDataStore.get("is_black")==='true'?$('html').addClass('black'):$('html').removeClass('black');
+var now = new Date();
+var month = now.getMonth() + 1;     //月
+var day = now.getDate();            //日
+var clock = '';  
+if(month < 10) clock += "0";
+clock += month + "-";
+if(day < 10) clock += "0";
+clock += day;
+var grayDayList = '05-12,09-18,12-13'.split(',');
+if(grayDayList.indexOf(clock)>=0) $('html').addClass('gray');</script><meta name="generator" content="Hexo 5.4.0"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/2.png" style="width:127px;"><h3 title=""><a href="/">江苏小小刘</a></h3><div class="description"><p>生命如花，一边盛开一边凋零!<br> Life is like a flower, blooming and withering at the same time.</p></div></div></div><ul class="social-links"><li><a target="_blank" rel="noopener" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0"><div style="width:19px;height:19px;display:inline-block;position:relative;"><div class="invert" style="width:19px;height:19px;display:inline-block;background-image:url('/font_awesome/svgs/brands/favicon.ico');background-repeat:no-repeat;background-size:80% 80%;background-position:50% 50%;position:absolute;top:4px;left:0px;cursor:pointer;"></div></div></a></li></ul><ul class="blog-links"></ul><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/archives">归档</a></li><li><a href="/tags">标签</a></li><li><a href="/guestbook">留言</a></li><li><a href="/about">关于</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>三维地图展示</a></h3></div><div class="post-content"><p>一个小案例，纪录下效果，用到了地图json数据，webgl着色器，GLSL语言，以及three.js第三方库，以及一些算法，流光效果，数字光柱，区域分割线，粒子效果模拟宇宙效果，法线贴图应用等。。。</p>
+<style>
+  #webgl-output{
+    position:relative;
+  }
+  #loading{
+    width:100%;
+    height:100%;
+    background:linear-gradient(to top right,rgba(11,64,95,0.6) 0%,#fff 100%);
+    position:absolute;
+    z-index:9999;
+    
+    display:flex;
+    align-items:center;
+    
+    /* top:0; */
+  }
+.loadingOne{
+    width: 80px;
+    height: 40px;
+    margin: 0 auto;
+}
+.loadingOne span{
+    display: inline-block;
+    width: 8px;
+    height: 100%;
+    border-radius: 4px;
+    background: lightgreen;
+    -webkit-animation: load 1s ease infinite;
+    animation: load 1s ease infinite;
+}
+@-webkit-keyframes load{
+    0%,100%{
+        height: 40px;
+        background: lightgreen;
+    }
+    50%{
+        height: 70px;
+        margin: -15px 0;
+        background: lightblue;
+    }
+}
+.loadingOne span:nth-child(2){
+    -webkit-animation-delay:0.2s;
+    animation-delay:0.2s;
+}
+.loadingOne span:nth-child(3){
+    -webkit-animation-delay:0.4s;
+    animation-delay:0.4s;
+}
+.loadingOne span:nth-child(4){
+    -webkit-animation-delay:0.6s;
+    animation-delay:0.6s;
+}
+.loadingOne span:nth-child(5){
+    -webkit-animation-delay:0.8s;
+    animation-delay:0.8s;
+}
+</style>
+
+<div id="webgl-output" class="invert" style="width:100%;height:700px;">
+  <div id="loading">
+    <div class="loadingOne">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+  </div>
+</div>
+<script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+
+<script id="fragmentShader" type="x-shader/x-vertex">
+    #ifdef GL_ES
+      precision mediump float;
+      #endif
+      varying float opacity;
+      uniform vec3 color;
+      void main(){
+          if(opacity <=0.2){
+              discard;
+          }
+          gl_FragColor = vec4(color,1.0);
+      }
+  </script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    varying vec2 vUv;
+      attribute float percent;
+      uniform float u_time;
+      uniform float number;
+      uniform float speed;
+      uniform float length;
+      varying float opacity;
+      uniform float size;
+      void main()
+      {
+          vUv = uv;
+          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+          float l = clamp(1.0-length,0.0,1.0);
+          gl_PointSize = clamp(fract(percent*number + l - u_time*number*speed)-l ,0.0,1.) * size * (1./length);
+          opacity = gl_PointSize/size;
+          gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
+
+<script type="importmap">
+            {
+                "imports": {
+                    "three": "/three/build/three.module.js",
+                    "three/addons/": "/three/examples/jsm/"
+                }
+            }
+</script>
+
+<script type="module">
+// import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.121.1/build/three.module.js';
+import * as THREE from 'three';
+// import * as THREE from '/three/build/three121.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Line2 } from 'three/addons/lines/Line2.js'
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js'
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
+// import * as d3 from 'https://d3js.org/d3.v7.min.js'
+let renderer, scene, camera, controls,labelRenderer,stars
+let particleArr = []
+let map = new THREE.Group()
+let textureLoader = new THREE.TextureLoader() //纹理贴图加载器
+let centerPos = [116.41, 40.25]
+let WaveMeshArr = []//所有波动光圈集合
+let uniforms2 = {
+  u_time: { value: 0.0 }
+}
+let rotatingApertureMesh, rotatingPointMesh
+function init() {
+    initRenderer()
+    initScene()
+    initCamera()
+    initControls()
+    initGeoJson()
+    initHelp()
+    initParticle()
+    initFloor()
+    initLights()
+    initPoints()
+    animate()
+    initResize()
+}
+
+let time = null
+function initResize(){
+  if(document.getElementById('webgl-output')){
+    window.onresize = ()=>{
+      null
+    }
+  }
+  window.onresize = () => {
+    if (time !== null) {
+      clearTimeout(time)
+    }
+    time = setTimeout(() => {
+      renderer.setSize(document.getElementById('webgl-output').clientWidth, document.getElementById('webgl-output').clientHeight)
+      camera.aspect = document.getElementById('webgl-output').clientWidth / document.getElementById('webgl-output').clientHeight
+      camera.updateProjectionMatrix()
+    }, 100)
+  }
+}
+function initRenderer() {
+    let container = document.getElementById('webgl-output')
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+    renderer.setSize(document.getElementById('webgl-output').clientWidth, document.getElementById('webgl-output').clientHeight)
+    document.getElementById('webgl-output').appendChild(renderer.domElement)
+
+  labelRenderer = new CSS2DRenderer()
+  labelRenderer.setSize(container.clientWidth, container.clientHeight)
+  labelRenderer.domElement.style.position = 'absolute'
+  labelRenderer.domElement.style.top = '0px'
+  labelRenderer.domElement.style.pointerEvents = 'none'
+  container.appendChild(labelRenderer.domElement)
+}
+function initScene() {
+    scene = new THREE.Scene()
+}
+function initGeoJson () {
+  fetch('/json/beijing.json').then((res)=>res.json()).then((json)=>initMap(json))
+  fetch('/json/beijingout.json').then((res)=>res.json()).then((json)=>initMapMesh(json))
+}
+function initMapMesh (chinaJson) {
+  let textureMap = textureLoader.load("/img/gz-map.jpeg")
+  let texturefxMap = textureLoader.load("/img/gz-map-fx.jpeg")
+  textureMap.wrapS = THREE.RepeatWrapping  //纹理水平方向的平铺方式
+  textureMap.wrapT = THREE.RepeatWrapping  //纹理垂直方向的平铺方式
+  textureMap.flipY = texturefxMap.flipY = false
+  textureMap.rotation = texturefxMap.rotation = THREE.MathUtils.degToRad(45)
+  const scale = 0.01
+  textureMap.repeat.set(scale, scale)
+  texturefxMap.repeat.set(scale, scale)
+  textureMap.offset.set(0.5, 0.5)
+  texturefxMap.offset.set(0.5, 0.5)
+  const material = new THREE.MeshPhongMaterial({
+    map: textureMap,
+    normalMap: texturefxMap,
+    // normalScale: new THREE.Vector2(12.2, 2.2),
+    color: '#7bc6c2',
+    combine: THREE.MultiplyOperation,
+    transparent: true,
+    opacity: 1,
+  })
+
+  const material1 = new THREE.MeshLambertMaterial({ color: 0x123024, transparent: true, opacity: 0.9 })
+  // d3-geo转化坐标
+  const projection = d3.geoMercator().center(centerPos).scale(2500).translate([0, 0])
+  // 遍历省份构建模型
+  chinaJson.features.forEach(elem => {
+    // 新建一个省份容器：用来存放省份对应的模型和轮廓线
+    const meshArrs = new THREE.Object3D()
+    const coordinates = elem.geometry.coordinates
+    const properties = elem.properties
+    coordinates.forEach(multiPolygon => {
+      multiPolygon.forEach(polygon => {
+        const shape = new THREE.Shape()
+        var v3ps = []
+        for (let i = 0; i < polygon.length; i++) {
+          const [x, y] = projection(polygon[i])
+          if (i === 0) {
+            shape.moveTo(x, -y)
+          }
+          shape.lineTo(x, -y)
+          v3ps.push(new THREE.Vector3(x, -y, 4.02))
+        }
+        const extrudeSettings = {
+          depth: 2,  //该属性指定图形可以拉伸多高，默认值是100
+          bevelEnabled: false, //是否给这个形状加斜面，默认加斜面。
+        }
+        //拉升成地图
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+        const mesh = new THREE.Mesh(geometry, [material, material1])
+        mesh.rotateX(-Math.PI / 2)
+        mesh.position.set(0, 1.5, -3)
+        meshArrs.add(mesh)
+
+        var curve = new THREE.CatmullRomCurve3(v3ps, true/*是否闭合*/)
+        var flyLine = initFlyLine(curve, {
+          speed: 0.4,
+          color: new THREE.Color('#ffff00'),
+          number: 3, //同时跑动的流光数量
+          length: 0.2, //流光线条长度
+          size: 4 //粗细
+        }, 10000)
+        flyLine.position.set(0, 0.1, -3)
+        flyLine.scale.multiplyScalar(1.001)
+        flyLine.rotateX(-Math.PI / 2)
+        meshArrs.add(flyLine)
+      })
+    })
+    map.add(meshArrs)
+  })
+  scene.add(map)
+}
+function initLineMaterial (setting) {
+  const number = setting ? (Number(setting.number) || 1.0) : 1.0
+  const speed = setting ? (Number(setting.speed) || 1.0) : 1.0
+  const length = setting ? (Number(setting.length) || 0.5) : 0.5
+  const size = setting ? (Number(setting.size) || 3.0) : 3.0
+  const color = setting ? setting.color || new THREE.Vector3(0, 1, 1) : new THREE.Vector3(0, 1, 1)
+  const singleUniforms = {
+    u_time: uniforms2.u_time,
+    number: { type: 'f', value: number },
+    speed: { type: 'f', value: speed },
+    length: { type: 'f', value: length },
+    size: { type: 'f', value: size },
+    color: { type: 'v3', value: color }
+  }
+  const lineMaterial = new THREE.ShaderMaterial({
+    uniforms: singleUniforms,
+    vertexShader: document.getElementById('vertexShader').textContent,
+    fragmentShader: document.getElementById('fragmentShader').textContent,
+    transparent: true,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  })
+  return lineMaterial
+}
+function initFlyLine (curve, matSetting, pointsNumber) {
+  var points = curve.getPoints(pointsNumber)
+  var geometry = new THREE.BufferGeometry().setFromPoints(points)
+  const length = points.length
+  var percents = new Float32Array(length)
+  for (let i = 0; i < points.length; i += 1) {
+    percents[i] = (i / length)
+  }
+  geometry.setAttribute('percent', new THREE.BufferAttribute(percents, 1))
+  const lineMaterial = initLineMaterial(matSetting)
+  var flyLine = new THREE.Points(geometry, lineMaterial)
+  return flyLine
+}
+function initMap (chinaJson) {
+  var matLine = new LineMaterial({
+    color: 0xffffff,
+    linewidth: 0.0013,
+    vertexColors: true,
+    dashed: false,
+    alphaToCoverage: true,
+
+  })
+
+  var matLine2 = new LineMaterial({
+    color: '#01bdc2',
+    linewidth: 0.0025,
+    vertexColors: true,
+    dashed: false,
+    alphaToCoverage: true,
+  })
+  // d3-geo转化坐标
+  const projection = d3.geoMercator().center(centerPos).scale(2500).translate([0, 0])
+  // 遍历省份构建模型
+  chinaJson.features.forEach(elem => {
+    const province = new THREE.Object3D()
+    const coordinates = elem.geometry.coordinates
+    const properties = elem.properties
+    //这里创建光柱
+    initLightPoint(properties, projection)
+    coordinates.forEach(multiPolygon => {
+      multiPolygon.forEach(polygon => {
+        const positions = []
+        var colors = []
+        const color = new THREE.Color()
+        var linGeometry = new LineGeometry()
+        for (let i = 0; i < polygon.length; i += 1) {
+          const [x, y] = projection(polygon[i])
+          positions.push(x, -y, 4.01)
+          color.setHSL(1, 1, 1)
+          colors.push(color.r, color.g, color.b)
+        }
+        //Line2
+        linGeometry.setPositions(positions)
+        linGeometry.setColors(colors)
+        const line = new Line2(linGeometry, matLine)
+        const line2 = new Line2(linGeometry, matLine2)
+        line.computeLineDistances()
+        line.rotateX(-Math.PI / 2)
+        line2.rotateX(-Math.PI / 2)
+        line.position.set(0, 0.1, -3)
+        line2.position.set(0, -3.5, -3)
+        line2.computeLineDistances()
+        line.scale.set(1, 1, 1)
+        province.add(line)
+        province.add(line2)
+      })
+    })
+    map.add(province)
+  })
+  scene.add(map)
+}
+function initLightPoint (properties, projection) {
+  // 创建光柱
+  let heightScaleFactor = 8 + random(1, 5) / 5
+  let lightCenter = properties.centroid || properties.center
+  let areaName = properties.name
+  // let lightCenter = properties.centroid;
+  // projection用来把经纬度转换成坐标
+  const [x, y] = projection(lightCenter)
+  let light = createLightPillar(x, y, heightScaleFactor)
+  light.position.z -= 3
+  // light.position.y = 13.31;
+  map.add(light)
+
+  //这里创建坐标
+  createTextPoint(x, y, areaName)
+}
+function createTextPoint (x, z, areaName) {
+  let tag = document.createElement('div')
+  tag.innerHTML = name
+  // tag.className = className
+  tag.style.color = "#fff"
+  tag.style.pointerEvents = 'none'
+  // tag.style.visibility = 'hidden'
+  tag.style.position = 'absolute'
+  let label = new CSS2DObject(tag)
+  label.element.innerHTML = areaName
+  label.element.style.visibility = 'visible'
+  label.position.set(x, -100, z)
+  label.position.z -= 3
+  // scene.add(label)
+}
+function createLightPillar (x, z, heightScaleFactor = 1) {
+  let group = new THREE.Group()
+  // 柱体高度
+  const height = heightScaleFactor
+  // 柱体的geo,6.19=柱体图片高度/宽度的倍数
+  const geometry = new THREE.PlaneGeometry(height / 6.219, height)
+  // 柱体旋转90度，垂直于Y轴
+  // geometry.rotateX(Math.PI / 2)
+  // 柱体的z轴移动高度一半对齐中心点
+  geometry.translate(0, height / 2, 0)
+  // 柱子材质
+  const material = new THREE.MeshBasicMaterial({
+    map: textureLoader.load('/img/光柱.png'),
+    color: 0x00ffff,
+    transparent: true,
+    depthWrite: false,
+    // depthTest:false,
+    side: THREE.DoubleSide,
+  })
+  // 光柱01
+  let light01 = new THREE.Mesh(geometry, material)
+  light01.renderOrder = 2
+  light01.name = 'createLightPillar01'
+  // 光柱02：复制光柱01
+  let light02 = light01.clone()
+  light02.renderOrder = 2
+  light02.name = 'createLightPillar02'
+  // 光柱02，旋转90°，跟 光柱01交叉
+  light02.rotateY(Math.PI / 2)
+
+
+  // 创建底部标点
+  const bottomMesh = createPointMesh(1.5)
+
+  // 创建光圈
+  const lightHalo = createLightHalo(1.5)
+  WaveMeshArr.push(lightHalo)
+  // 将光柱和标点添加到组里
+  group.add(bottomMesh, lightHalo, light01, light02)
+  // 设置组对象的姿态
+  // group = setMeshQuaternion(group, R, lon, lat)
+  group.position.set(x, 4.01, z)
+  return group
+}
+function createPointMesh (size) {
+  // 标记点：几何体，材质，
+  const geometry = new THREE.PlaneGeometry(1, 1)
+  const material = new THREE.MeshBasicMaterial({
+    map: textureLoader.load('/img/标注.png'),
+    color: 0x00ffff,
+    side: THREE.DoubleSide,
+    transparent: true,
+    depthWrite: false, //禁止写入深度缓冲区数据
+  })
+  let mesh = new THREE.Mesh(geometry, material)
+  mesh.renderOrder = 2
+  mesh.rotation.x = Math.PI / 2
+  mesh.name = 'createPointMesh'
+  // 缩放
+  const scale = 1 * size
+  mesh.scale.set(scale, scale, scale)
+  return mesh
+}
+function createLightHalo (size) {
+  // 标记点：几何体，材质，
+  const geometry = new THREE.PlaneGeometry(1, 1)
+  const material = new THREE.MeshBasicMaterial({
+    map: textureLoader.load('/img/标注光圈.png'),
+    color: 0x00ffff,
+    side: THREE.DoubleSide,
+    opacity: 0,
+    transparent: true,
+    depthWrite: false, //禁止写入深度缓冲区数据
+  })
+  let mesh = new THREE.Mesh(geometry, material)
+  mesh.renderOrder = 2
+  mesh.name = 'createLightHalo'
+  mesh.rotation.x = Math.PI / 2
+  // 缩放
+  const scale = 1.5 * size
+  mesh.size = scale//自顶一个属性，表示mesh静态大小
+  mesh.scale.set(scale, scale, scale)
+  return mesh
+}
+
+function initLights () {
+  scene.add(new THREE.AmbientLight(0x7af4ff, 1.2))
+  let directionalLight1 = new THREE.DirectionalLight(0x7af4ff, 1) //037af1
+  directionalLight1.position.set(-100, 10, -100)
+  let directionalLight2 = new THREE.DirectionalLight(0x7af4ff, 1)
+  directionalLight2.position.set(100, 10, 100)
+  scene.add(directionalLight1)
+  scene.add(directionalLight2)
+}
+
+function initParticle () {
+  //设置范围
+  let minX = -60
+  let maxX = 60
+  let minY = -10
+  let maxY = 30
+  let minZ = -60
+  let maxZ = 60
+
+  for (let i = 0; i < 15; i++) {
+    const particle = createSequenceFrame({
+      image: '/img/1.png',
+      width: 180,
+      height: 189,
+      frame: 9,
+      column: 9,
+      row: 1,
+      speed: 0.5,
+    })
+    let particleScale = random(5, 10) / 100
+    particle.scale.set(particleScale, particleScale, particleScale)
+    let x = random(minX, maxX)
+    let y = random(minY, maxY)
+    let z = random(minZ, maxZ)
+    particle.position.set(x, y, z)
+    particleArr.push(particle)
+  }
+  scene.add(...particleArr)
+  return particleArr
+};
+function createSequenceFrame (opt) {
+  // 默认参数
+  let options = deepMerge(
+    {
+      image: '',
+      width: 200, // 显示的宽度
+      height: 200, // 显示的高度
+      frame: 60, //总共的帧数
+      column: 10, // 序列图的列
+      row: 6, // 序列图的行
+      speed: 0.5, // 速度
+    },
+    opt
+  )
+  let geometry = new THREE.PlaneGeometry(options.width, options.height) //矩形平面
+  let texture = textureLoader.load(options.image) // 加载图片
+  texture.repeat.set(1 / options.column, 1 / options.row) // 从图像上截图第一帧
+  let material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 1,
+    side: THREE.DoubleSide,
+    depthWrite: false, //是否对深度缓冲区有任何的影响
+  })
+  let mesh = new THREE.Mesh(geometry, material)
+
+  let r = 0 // 当前行
+  let c = 0 // 当前列
+  let t = 0 // 时间
+  mesh.updateSequenceFrame = (time) => {
+    t += options.speed
+    if (t > options.frame) t = 0
+    c = options.column - Math.floor(t % options.column) - 1
+    r = Math.floor((t / options.column) % options.row)
+    texture.offset.x = c / options.column // 动态更新纹理偏移 播放关键帧动画
+    texture.offset.y = r / options.row // 动态更新纹理偏移 播放关键帧动画
+  }
+
+  return mesh
+}
+function random (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+function isType (type, value) {
+  return Object.prototype.toString.call(value) === `[object ${type}]`
+}
+function isObject (value) {
+  return isType('Object', value)
+}
+function initPoints () {
+  var texture = new THREE.TextureLoader().load('/img/gradient.png')
+  const positions = []
+  const colors = []
+  const geometry = new THREE.BufferGeometry()
+  for (var i = 0; i < 10000; i++) {
+    var vertex = new THREE.Vector3()
+    vertex.x = Math.random() * 2 - 1
+    vertex.y = Math.random() * 2 - 1
+    vertex.z = Math.random() * 2 - 1
+    positions.push(vertex.x, vertex.y, vertex.z)
+    var color = new THREE.Color()
+    color.setHSL(Math.random() * 0.2 + 0.5, 0.55, Math.random() * 0.25 + 0.55)
+    colors.push(color.r, color.g, color.b)
+  }
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+  var starsMaterial = new THREE.PointsMaterial({
+    map: texture,
+    size: 1,
+    transparent: true,
+    opacity: 1,
+    vertexColors: true, //true：且该几何体的colors属性有值，则该粒子会舍弃第一个属性--color，而应用该几何体的colors属性的颜色
+    blending: THREE.AdditiveBlending,
+    sizeAttenuation: true
+  })
+  stars = new THREE.Points(geometry, starsMaterial)
+  stars.scale.set(300, 300, 300)
+  scene.add(stars)
+}
+function initFloor () {
+  const geometry = new THREE.PlaneGeometry(400, 400)
+  let texture = textureLoader.load("/img/地板背景.png")
+  const material = new THREE.MeshPhongMaterial({
+    color: 0xffffff,
+    map: texture,
+    // emissive:0xffffff,
+    // emissiveMap:Texture,
+    transparent: true,
+    opacity: 1,
+    depthTest: true,
+    // roughness:1,
+    // metalness:0,
+    depthWrite: false,
+    // side: THREE.DoubleSide
+  })
+  let plane = new THREE.Mesh(geometry, material)
+  plane.rotateX(-Math.PI / 2)
+  scene.add(plane)
+
+
+  let rotatingApertureTexture = textureLoader.load("/img/rotatingAperture.png")
+  let rotatingApertureerial = new THREE.MeshBasicMaterial({
+    map: rotatingApertureTexture,
+    transparent: true,
+    opacity: 1,
+    depthTest: true,
+    depthWrite: false,
+  })
+  let rotatingApertureGeometry = new THREE.PlaneGeometry(100, 100)
+  rotatingApertureMesh = new THREE.Mesh(rotatingApertureGeometry, rotatingApertureerial)
+  rotatingApertureMesh.rotateX(-Math.PI / 2)
+  rotatingApertureMesh.position.y = 0.02
+  rotatingApertureMesh.scale.set(1.2, 1.2, 1.2)
+  scene.add(rotatingApertureMesh)
+
+  let rotatingPointTexture = textureLoader.load("/img/rotating-point2.png")
+  let material2 = new THREE.MeshBasicMaterial({
+    map: rotatingPointTexture,
+    transparent: true,
+    opacity: 1,
+    depthTest: true,
+    depthWrite: false,
+  })
+
+  rotatingPointMesh = new THREE.Mesh(rotatingApertureGeometry, material2)
+  rotatingPointMesh.rotateX(-Math.PI / 2)
+  rotatingPointMesh.position.y = 0.04
+  rotatingPointMesh.scale.set(1, 1, 1)
+  scene.add(rotatingPointMesh)
+
+  let circlePoint = textureLoader.load("/img/circle-point.png")
+  let material3 = new THREE.MeshPhongMaterial({
+    color: 0x00ffff,
+    map: circlePoint,
+    transparent: true,
+    opacity: 1,
+    depthWrite: false,
+    // depthTest: false,
+  })
+  let plane3 = new THREE.PlaneGeometry(120, 120)
+  let mesh3 = new THREE.Mesh(plane3, material3)
+  mesh3.rotateX(-Math.PI / 2)
+  mesh3.position.y = 0.06
+  scene.add(mesh3)
+}
+function deepMerge (target, source) {
+  target = deepClone(target)
+  for (let key in source) {
+    if (key in target) {
+      // 对象的处理
+      if (isObject(source[key])) {
+        if (!isObject(target[key])) {
+          target[key] = source[key]
+        } else {
+          target[key] = deepMerge(target[key], source[key])
+        }
+      } else {
+        target[key] = source[key]
+      }
+    } else {
+      target[key] = source[key]
+    }
+  }
+  return target
+}
+function deepClone (target, map = new Map()) {
+  // target 不能为空，并且是一个对象
+  if (target != null && isObject(target)) {
+    // 在克隆数据前，进行判断是否克隆过,已克隆就返回克隆的值
+    let cache = map.get(target)
+    if (cache) {
+      return cache
+    }
+    // 判断是否为数组
+    const isArray = Array.isArray(target)
+    let result = isArray ? [] : {}
+    // 将新结果存入缓存中
+    cache = map.set(target, result)
+    // 如果是数组
+    if (isArray) {
+      // 循环数组，
+      target.forEach((item, index) => {
+        // 如果item是对象，再次递归
+        result[index] = deepClone(item, cache)
+      })
+    } else {
+      // 如果是对象
+      Object.keys(target).forEach((key) => {
+        if (isObject(result[key])) {
+          result[key] = deepClone(target[key], cache)
+        } else {
+          result[key] = target[key]
+        }
+      })
+    }
+    return result
+  } else {
+    return target
+  }
+}
+function initCamera() {
+    camera = new THREE.PerspectiveCamera(45, document.getElementById('webgl-output').clientWidth / document.getElementById('webgl-output').clientHeight, 0.1, 1000)
+    camera.position.set(80, 80, 80);
+    camera.lookAt(scene.position)
+}
+function initHelp() {
+    let axes = new THREE.AxesHelper(1000)
+    scene.add(axes)
+}
+function initControls() {
+    controls = new OrbitControls(camera, renderer.domElement)
+}
+
+function animate() {
+
+
+    renderer.render(scene, camera)
+
+        if (rotatingApertureMesh) {
+    rotatingApertureMesh.rotation.z += 0.0005
+  }
+  if (rotatingPointMesh) {
+    rotatingPointMesh.rotation.z -= 0.0005
+  }
+      if (particleArr.length) {
+        for (let i = 0; i < particleArr.length; i++) {
+        particleArr[i].updateSequenceFrame()
+        particleArr[i].position.y += 0.15
+        if (particleArr[i].position.y >= 30) {
+            particleArr[i].position.y = -10
+        }
+        }
+    }
+      if (WaveMeshArr.length) {
+    WaveMeshArr.forEach(function (mesh) {
+      mesh._s += 0.007
+      mesh.scale.set(mesh.size * mesh._s, mesh.size * mesh._s, mesh.size * mesh._s)
+      if (mesh._s <= 1.5) {
+        //mesh._s=1，透明度=0 mesh._s=1.5，透明度=1
+        mesh.material.opacity = (mesh._s - 1) * 2
+      } else if (mesh._s > 1.5 && mesh._s <= 2) {
+        //mesh._s=1.5，透明度=1 mesh._s=2，透明度=0
+        mesh.material.opacity = 1 - (mesh._s - 1.5) * 2
+      } else {
+        mesh._s = 1.0
+      }
+    })
+  }
+labelRenderer.render(scene, camera)
+  if (stars) {
+    stars.rotation.y += .0001
+  }
+  uniforms2.u_time.value += 0.007
+
+    requestAnimationFrame(animate)
+}
+init();
+document.onreadystatechange = function(){
+  if(document.readyState=="complete"){
+    document.getElementById('loading').style.display='none'
+  }
+}
+</script></div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2023-03-29</span><i class="fa fa-tag"></i><a class="tag" href="/tags/着色器/" title="着色器">着色器 </a><a class="tag" href="/tags/three-js/" title="three.js">three.js </a><span class="leancloud_visitors"></span></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="" onclick="javascript:join_favorite()" ref="sidebar"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="qq"><a class="fa fa-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=,https://lxj-1996.github.io/2023/03/29/三维地图展示/,江苏小小刘,三维地图展示,;"></a></div><div class="wechat"><a class="fa fa-wechat" target="_blank" rel="noopener" href="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://lxj-1996.github.io/2023/03/29/三维地图展示/"></a></div></div><div class="pagination"><ul class="clearfix"><li class="pre pagbuttons"><a class="btn" role="navigation" href="/2023/04/05/%E6%9B%BE%E7%BB%8F%E4%B9%9F%E6%98%AF%E4%B8%AA%E7%A8%8D%E5%BE%AE%E6%9C%89%E7%82%B9%E6%96%87%E8%89%BA%E7%9A%84%E5%B0%8F%E9%9D%92%E5%B9%B4%E5%91%A2/" title="曾经也是个稍微有点文艺的小青年呢">上一篇</a></li><li class="next pagbuttons"><a class="btn" role="navigation" href="/2023/03/27/css3%E5%8F%98%E9%87%8F%E5%88%87%E6%8D%A2%E7%9A%AE%E8%82%A4/" title="css3变量切换皮肤">下一篇</a></li></ul></div><script src="/js/visitors.js"></script><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div></div></div></div><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script><script src="/js/add-bookmark.js"></script><script src="/js/baidu-tongji.js"></script><script src="/js/baidu-tuisong.js"></script></body></html>
