@@ -1,0 +1,423 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><meta name="author" content="LiuXiaoJie"><title>神秘游戏小场景demo · 江苏小小刘</title><meta name="description" content="一个小案例，纪录下效果，用到了glb模型，烘焙贴图，着色器代码，主要是烘焙贴图，将光影信息做到贴图里面，就不用在代码里面调试效果了。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
+
+  #webgl-output{
+    position:relative;
+  }
+  #lo"><meta name="keywords"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="baidu-site-verification" content="code-8T70VyNDfa"><meta name="msvalidate.01" content="1227901851D75DB8DBC59424B1AE7021"><meta name="renderer" content="webkit"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/blog_basic.css"><link rel="stylesheet" href="/css/font-awesome.css"><link rel="stylesheet" href="/css/my_style.css"><link rel="stylesheet" href="/font_awesome/css/brands.min.css"><link rel="stylesheet" href="/font_awesome/css/solid.min.css"><link rel="alternate" type="application/atom+xml" title="ATOM 1.0" href="/atom.xml"><script src="/js/jquery.js"></script><script src="/js/store_set.js"></script><script>window.localDataStore.get("is_black")==='true'?$('html').addClass('black'):$('html').removeClass('black');
+var now = new Date();
+var month = now.getMonth() + 1;     //月
+var day = now.getDate();            //日
+var clock = '';  
+if(month < 10) clock += "0";
+clock += month + "-";
+if(day < 10) clock += "0";
+clock += day;
+var grayDayList = '05-12,09-18,12-13'.split(',');
+if(grayDayList.indexOf(clock)>=0) $('html').addClass('gray');</script><meta name="generator" content="Hexo 5.4.0"></head><body><div class="sidebar animated fadeInDown"><div class="logo-title"><div class="title"><img src="/images/2.png" style="width:127px;"><h3 title=""><a href="/">江苏小小刘</a></h3><div class="description"><p>生命如花，一边盛开一边凋零!<br> Life is like a flower, blooming and withering at the same time.</p></div></div></div><ul class="social-links"><li><a target="_blank" rel="noopener" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0"><div style="width:19px;height:19px;display:inline-block;position:relative;"><div class="invert" style="width:19px;height:19px;display:inline-block;background-image:url('/font_awesome/svgs/brands/favicon.ico');background-repeat:no-repeat;background-size:80% 80%;background-position:50% 50%;position:absolute;top:4px;left:0px;cursor:pointer;"></div></div></a></li></ul><ul class="blog-links"></ul><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div><div class="main"><div class="page-top animated fadeInDown"><div class="nav"><li><a href="/">首页</a></li><li><a href="/archives">归档</a></li><li><a href="/tags">标签</a></li><li><a href="/guestbook">留言</a></li><li><a href="/about">关于</a></li></div><div class="information"><div class="back_btn"><li><a class="fa fa-chevron-left" onclick="window.history.go(-1)"> </a></li></div></div></div><div class="autopagerize_page_element"><div class="content"><div class="post-page"><div class="post animated fadeInDown"><div class="post-title"><h3><a>神秘游戏小场景demo</a></h3></div><div class="post-content"><p>一个小案例，纪录下效果，用到了glb模型，烘焙贴图，着色器代码，主要是烘焙贴图，将光影信息做到贴图里面，就不用在代码里面调试效果了。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。</p>
+<style>
+  #webgl-output{
+    position:relative;
+  }
+  #loading{
+    width:100%;
+    height:100%;
+    background:linear-gradient(to top right,rgba(11,64,95,0.6) 0%,#fff 100%);
+    position:absolute;
+    z-index:9999;
+    
+    display:flex;
+    align-items:center;
+    
+    /* top:0; */
+  }
+  .loadinged{
+    width: 100%;
+    height: 40px;
+    position:absolute;
+    text-align:center;
+    color:white;
+    font-size:18px;
+    text-shadow:2px 2px 3px #ccc;
+    font-weight:bold;
+    padding-top:100px;
+  }
+.loadingOne{
+    width: 80px;
+    height: 40px;
+    margin: 0 auto;
+}
+.loadingOne span{
+    display: inline-block;
+    width: 8px;
+    height: 100%;
+    border-radius: 4px;
+    background: lightgreen;
+    -webkit-animation: load 1s ease infinite;
+    animation: load 1s ease infinite;
+}
+@-webkit-keyframes load{
+    0%,100%{
+        height: 40px;
+        background: lightgreen;
+    }
+    50%{
+        height: 70px;
+        margin: -15px 0;
+        background: lightblue;
+    }
+}
+.loadingOne span:nth-child(2){
+    -webkit-animation-delay:0.2s;
+    animation-delay:0.2s;
+}
+.loadingOne span:nth-child(3){
+    -webkit-animation-delay:0.4s;
+    animation-delay:0.4s;
+}
+.loadingOne span:nth-child(4){
+    -webkit-animation-delay:0.6s;
+    animation-delay:0.6s;
+}
+.loadingOne span:nth-child(5){
+    -webkit-animation-delay:0.8s;
+    animation-delay:0.8s;
+}
+</style>
+
+<div id="webgl-output" class="invert" style="width:100%;height:700px;">
+  <div id="loading">
+    <div class="loadingOne">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class='loadinged'></div>
+  </div>
+</div>
+
+<script type="importmap">
+            {
+                "imports": {
+                    "three": "/three/build/three.module.js",
+                    "three/addons/": "/three/examples/jsm/"
+                }
+            }
+</script>
+
+<script type="module">
+    import * as THREE from 'three'
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+    const portalVertexShader = `
+        varying vec2 vUv;
+
+        void main() {
+        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+        vec4 viewPosition = viewMatrix * modelPosition;
+        vec4 projectionPosition = projectionMatrix * viewPosition;
+        gl_Position = projectionPosition;
+        vUv = uv;
+        }
+    `
+
+    const portalFragmentShader = `
+        uniform float uTime;
+        uniform vec3 uColorStart;
+        uniform vec3 uColorEnd;
+
+        varying vec2 vUv;
+        //    Classic Perlin 3D Noise 
+        //    by Stefan Gustavson
+        //
+        vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+        vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+        vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
+
+        float cnoise(vec3 P){
+        vec3 Pi0 = floor(P); // Integer part for indexing
+        vec3 Pi1 = Pi0 + vec3(1.0); // Integer part + 1
+        Pi0 = mod(Pi0, 289.0);
+        Pi1 = mod(Pi1, 289.0);
+        vec3 Pf0 = fract(P); // Fractional part for interpolation
+        vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
+        vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+        vec4 iy = vec4(Pi0.yy, Pi1.yy);
+        vec4 iz0 = Pi0.zzzz;
+        vec4 iz1 = Pi1.zzzz;
+
+        vec4 ixy = permute(permute(ix) + iy);
+        vec4 ixy0 = permute(ixy + iz0);
+        vec4 ixy1 = permute(ixy + iz1);
+
+        vec4 gx0 = ixy0 / 7.0;
+        vec4 gy0 = fract(floor(gx0) / 7.0) - 0.5;
+        gx0 = fract(gx0);
+        vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+        vec4 sz0 = step(gz0, vec4(0.0));
+        gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+        gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+
+        vec4 gx1 = ixy1 / 7.0;
+        vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
+        gx1 = fract(gx1);
+        vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+        vec4 sz1 = step(gz1, vec4(0.0));
+        gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+        gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+
+        vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+        vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+        vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+        vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+        vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+        vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+        vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+        vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+
+        vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+        g000 *= norm0.x;
+        g010 *= norm0.y;
+        g100 *= norm0.z;
+        g110 *= norm0.w;
+        vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+        g001 *= norm1.x;
+        g011 *= norm1.y;
+        g101 *= norm1.z;
+        g111 *= norm1.w;
+
+        float n000 = dot(g000, Pf0);
+        float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+        float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+        float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+        float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
+        float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+        float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
+        float n111 = dot(g111, Pf1);
+
+        vec3 fade_xyz = fade(Pf0);
+        vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+        vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+        float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+        return 2.2 * n_xyz;
+        }
+
+        void main() {
+        // Displace UV by adding perlin nouise
+        vec2 displacedUv = vUv + cnoise(vec3(vUv * 7.0, uTime * 0.1));
+
+        // Perlin noise
+        float strength = cnoise(vec3(displacedUv * 5.0, uTime * 0.2));
+
+        // Outer glow
+        float outerGlow = distance(vUv, vec2(0.5)) * 5.0 - 1.4;
+        strength += outerGlow;
+
+        // Step 
+        strength += step(-0.2, strength) * 0.8;
+
+        // Clamp
+        strength = clamp(strength, 0.0, 1.0);
+        
+        // Final Color
+        vec3 color = mix(uColorStart, uColorEnd, strength);
+        gl_FragColor = vec4(color, 1.0);
+        }
+    `
+
+    const firefliesVertexShader = `
+        uniform float uPixelRatio;
+        uniform float uSize;
+        uniform float uTime;
+        attribute float aScale;
+        void main() {
+        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+        modelPosition.y += sin(uTime + modelPosition.x * 100.0) * aScale * 0.2;
+        modelPosition.z += cos(uTime + modelPosition.x * 100.0) * aScale * 0.2;
+        modelPosition.x += cos(uTime + modelPosition.x * 100.0) * aScale * 0.2;
+        vec4 viewPosition = viewMatrix * modelPosition;
+        vec4 projectionPostion = projectionMatrix * viewPosition;
+
+        gl_Position = projectionPostion;
+        gl_PointSize = uSize * aScale * uPixelRatio;
+        gl_PointSize *= (1.0 / - viewPosition.z);
+        }
+    `
+
+    const firefliesFragmentShader = `
+        void main() {
+            float distanceToCenter = distance(gl_PointCoord, vec2(0.5));
+            float strength = 0.05 / distanceToCenter - 0.1;
+            gl_FragColor = vec4(1.0, 1.0, 1.0, strength);
+        }
+    `
+
+    const debugObject = {
+        clearColor: "#1e2243",
+        portalColorStart: "#b91fac",
+        portalColorEnd: "#ffebf3"
+    };
+
+    const textureLoader = new THREE.TextureLoader();
+
+    const gltfLoader = new GLTFLoader();
+
+    const clock = new THREE.Clock();
+
+    let renderer, scene, camera, controls, firefliesMaterial, portalLightMaterial
+    function init() {
+        initRenderer()
+        initScene()
+        initCamera()
+        initControls()
+        // initHelp()
+        addModel()
+        animate()
+    }
+
+
+    function initRenderer() {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.setClearColor(debugObject.clearColor);
+        renderer.setSize(document.getElementById('webgl-output').clientWidth, document.getElementById('webgl-output').clientHeight)
+        document.getElementById('webgl-output').appendChild(renderer.domElement)
+    }
+
+    function initScene() {
+        scene = new THREE.Scene()
+    }
+
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, document.getElementById('webgl-output').clientWidth / document.getElementById('webgl-output').clientHeight, 0.1, 1000)
+        camera.position.set(-4, 2, -4)
+        camera.lookAt(scene.position)
+    }
+
+    function initHelp() {
+        let axes = new THREE.AxesHelper(1000)
+        scene.add(axes)
+    }
+
+    function initControls() {
+        controls = new OrbitControls(camera, renderer.domElement)
+        controls.enableDamping = true;
+        controls.maxPolarAngle = Math.PI / 2 - 0.1;
+
+        // Clamp panning
+        const minPan = new THREE.Vector3(-0.2, -0.2, -0.2);
+        const maxPan = new THREE.Vector3(2, 2, 2);
+        const _v = new THREE.Vector3();
+
+        controls.addEventListener("change", function () {
+            _v.copy(controls.target);
+            controls.target.clamp(minPan, maxPan);
+            _v.sub(controls.target);
+            camera.position.sub(_v);
+        });
+    }
+
+    function addModel() {
+        const bakedTexture = textureLoader.load("/model/baked-02.jpg");
+        bakedTexture.encoding = THREE.sRGBEncoding;
+        const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture });
+
+        bakedTexture.flipY = false;
+
+        const poleLightMaterial = new THREE.MeshBasicMaterial({ color: "#f0bf94" });
+
+        portalLightMaterial = new THREE.ShaderMaterial({
+            vertexShader: portalVertexShader,
+            fragmentShader: portalFragmentShader,
+            transparent: false,
+            blending: THREE.AdditiveBlending,
+            uniforms: {
+                uTime: { value: 0 },
+                uColorStart: { value: new THREE.Color(debugObject.portalColorStart) },
+                uColorEnd: { value: new THREE.Color(debugObject.portalColorEnd) }
+            }
+        });
+
+        gltfLoader.load("/model/portal-2.glb", gltf => {
+            const bakedMesh = gltf.scene.children.find(child => child.name === "baked");
+            bakedMesh.material = bakedMaterial;
+
+            const portalLight = gltf.scene.children.find(
+                child => child.name === "portalCircle");
+
+            portalLight.material = portalLightMaterial;
+            gltf.scene.children.
+                filter(child => child.name.includes("lampLight")).
+                forEach(light => {
+                    light.material = poleLightMaterial;
+                });
+
+            scene.add(gltf.scene);
+        });
+
+        const firefliesGeometry = new THREE.BufferGeometry();
+        const firefliesCount = 30;
+        const positionArray = new Float32Array(firefliesCount * 3);
+        const scaleArray = new Float32Array(firefliesCount);
+        for (let i = 0; i < firefliesCount; i++) {
+            positionArray[i * 3 + 0] = (Math.random() - 0.5) * 4;
+            positionArray[i * 3 + 1] = Math.random() * 1.5;
+            positionArray[i * 3 + 2] = (Math.random() - 0.5) * 4;
+            scaleArray[i] = Math.random();
+        }
+        firefliesGeometry.setAttribute(
+            "position",
+            new THREE.BufferAttribute(positionArray, 3));
+
+        firefliesGeometry.setAttribute(
+            "aScale",
+            new THREE.BufferAttribute(scaleArray, 1));
+
+
+        firefliesMaterial = new THREE.ShaderMaterial({
+            vertexShader: firefliesVertexShader,
+            fragmentShader: firefliesFragmentShader,
+            transparent: true,
+            uniforms: {
+                uTime: { value: 0 },
+                uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+                uSize: { value: 100 }
+            },
+
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        const fireflies = new THREE.Points(firefliesGeometry, firefliesMaterial);
+        scene.add(fireflies);
+    }
+
+    function animate() {
+        const elapsedTime = clock.getElapsedTime();
+
+        firefliesMaterial.uniforms.uTime.value = elapsedTime;
+        portalLightMaterial.uniforms.uTime.value = elapsedTime;
+
+        // Update controls
+        controls.update();
+        renderer.render(scene, camera)
+        requestAnimationFrame(animate)
+    }
+    init()
+    document.onreadystatechange = function(){
+        if(document.readyState=="complete"){
+            document.getElementById('loading').style.display='none'
+        }
+    }
+    window.addEventListener('resize', onWindowResize, false)
+    function onWindowResize() {
+        camera.aspect = document.getElementById('webgl-output').clientWidth / document.getElementById('webgl-output').clientHeight
+        camera.updateProjectionMatrix()
+        renderer.setSize(document.getElementById('webgl-output').clientWidth, document.getElementById('webgl-output').clientHeight)
+    }
+</script>
+</div><div class="post-footer"><div class="meta"><div class="info"><i class="fa fa-sun-o"></i><span class="date">2023-04-28</span><i class="fa fa-tag"></i><a class="tag" href="/tags/小场景/" title="小场景">小场景 </a><a class="tag" href="/tags/烘焙贴图/" title="烘焙贴图">烘焙贴图 </a><span class="leancloud_visitors"></span></div></div></div></div><div class="share"><div class="evernote"><a class="fa fa-bookmark" href="" onclick="javascript:join_favorite()" ref="sidebar"></a></div><div class="weibo"><a class="fa fa-weibo" href="javascript:void((function(s,d,e){try{}catch(e){}var f='http://service.weibo.com/share/share.php?',u=d.location.href,p=['url=',e(u),'&amp;title=',e(d.title),'&amp;appkey=2924220432'].join('');function a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=620,height=450,left=',(s.width-620)/2,',top=',(s.height-450)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent)){setTimeout(a,0)}else{a()}})(screen,document,encodeURIComponent));"></a></div><div class="qq"><a class="fa fa-qq" target="_blank" rel="noopener" href="https://connect.qq.com/widget/shareqq/index.html?url=,https://lxj-1996.github.io/2023/04/28/神秘游戏小场景demo/,江苏小小刘,神秘游戏小场景demo,;"></a></div><div class="wechat"><a class="fa fa-wechat" target="_blank" rel="noopener" href="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://lxj-1996.github.io/2023/04/28/神秘游戏小场景demo/"></a></div></div><div class="pagination"><ul class="clearfix"><li class="pre pagbuttons"><a class="btn" role="navigation" href="/2023/07/09/%E5%9B%BE%E7%89%87%E5%B1%85%E4%B8%AD/" title="图片居中">上一篇</a></li><li class="next pagbuttons"><a class="btn" role="navigation" href="/2023/04/17/%E4%B8%80%E4%B8%AA%E4%B8%89%E7%BB%B4%E5%B0%8F%E5%9C%BA%E6%99%AF/" title="一个三维小场景">下一篇</a></li></ul></div><script src="/js/visitors.js"></script><div class="footer"><div class="p"> <span>© 2023 - 2024 </span><i class="fa fa-star"></i><span> LiuXiaoJie</span></div><div class="friend-links"><span>友情链接:</span><a class="link-item" href="https://github.com/Clt1997" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://clt521.gitee.io/" title="小禅院" target="_blank">小禅院</a><a class="link-item" href="https://space.bilibili.com/323405428?spm_id_from=333.1007.0.0" title="bilibili" target="_blank">bilibili</a></div></div></div></div></div></div><script src="/js/jquery-migrate-1.2.1.min.js"></script><script src="/js/jquery.appear.js"></script><script src="/js/add-bookmark.js"></script><script src="/js/baidu-tongji.js"></script><script src="/js/baidu-tuisong.js"></script></body></html>

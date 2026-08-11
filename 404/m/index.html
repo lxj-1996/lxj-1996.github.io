@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>网页君正在寻找哦！</title>
+	<meta name="description" content="您访问的网页出错啦！" />
+	<meta name="keywords" content="404" />
+	<meta name="author" content="Codrops ChenLT" />
+	<meta name="viewport" content="width=device-width,user-scalable=no, minimum-scale=1, initial-scale=1" />
+	<link href="../../images/favicon.ico" mce_href="favicon.ico" rel="shortcut icon" type="../../images/favicon.ico" />
+	<script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.beattext.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+	<link rel="stylesheet" href="css/style.m.css" />
+	<script type="text/javascript">
+		var system = {};
+		var p = navigator.platform;
+		system.win = p.indexOf("Win") == 0;
+		system.mac = p.indexOf("Mac") == 0;
+		system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+		if (system.win || system.mac || system.xll) {//如果是电脑跳转到
+			// window.location.href = "../index.html";
+		}//上面代码是判断是手机端还是PC端
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$('p#roloadText').beatText({ isAuth: true, beatHeight: "1em", isRotate: false, upTime: 100, downTime: 100 });
+		});
+	</script>
+</head>
+
+<body>
+	<div class="logo" id="a" onclick="a();" title="点击我有惊喜！">
+		<img src="../../images/20171216094159_QaLXP.jpeg">
+	</div>
+	<div class="body_buttom">
+		<div class="container">
+			<p id="roloadText">网页维护中...</p>
+		</div>
+		<center style="display: none;">
+			<center>
+				<h2 class="gg_gg">
+					网站维护公告：
+				</h2>
+				<font class="gg_font3">距离网站开启日倒计时：</font><br /><br />
+			</center>
+			<div id="CountMsg" class="HotDate">
+				<span id="t_d" class="gg_sj">00天</span>
+				<span id="t_h" class="gg_sj">00时</span>
+				<span id="t_m" class="gg_sj">00分</span>
+				<span id="t_s" class="gg_sj">00秒</span>
+			</div>
+			<script type="text/javascript">
+				function getRTime() {
+					var EndTime = new Date('2018/2/18 20:18:00'); //截止时间
+					var NowTime = new Date();
+					var t = EndTime.getTime() - NowTime.getTime();
+					var d = Math.floor(t / 1000 / 60 / 60 / 24);
+					var h = Math.floor(t / 1000 / 60 / 60 % 24);
+					var m = Math.floor(t / 1000 / 60 % 60);
+					var s = Math.floor(t / 1000 % 60);
+					document.getElementById("t_d").innerHTML = d + "天";
+					document.getElementById("t_h").innerHTML = h + "时";
+					document.getElementById("t_m").innerHTML = m + "分";
+					document.getElementById("t_s").innerHTML = s + "秒";
+				}
+				setInterval(getRTime, 1000);
+			</script>
+		</center>
+		<ul class='page-from'>
+			<li>
+				原作者：Codrops
+			</li>
+			<li>
+				源地址：<a href="http://sealo.xyz/">sealo.xyz</a>
+			</li>
+			<li>
+				<div>© 2023 - 2024 LiuXiaoJie</div>
+				<div>本页面改造自互联网，如有侵权请<a href="mailto:404751576@qq.com">与我联系</a>。</div>
+				<!-- <div><a href="http://www.beian.miit.gov.cn/" target="_blank" style="text-decoration: none;">闽ICP备xxxxxxxx号</a> | 闽公网安备 xxxxxxxxxxxxxx号</div> -->
+			</li>
+
+		</ul>
+		<audio autoplay loop id="music">
+			<source src="../music/music.mp3" type="audio/mpeg">
+		</audio>
+	</div>
+	<script>
+		function a() {
+			var audio = document.getElementById('music');
+			if (audio.paused) {
+				audio.play();//audio.play();// 播放
+			}
+			else {
+				audio.pause();// 暂停
+			}
+		}
+	</script>
+</body>
+
+</html>
