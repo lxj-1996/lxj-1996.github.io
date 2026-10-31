@@ -36,12 +36,29 @@
             color: white;
             font-size: 20px;
             font-weight: bold;
+            background: rgba(21, 18, 18, 0.59);
         }
         .red{
             background: #c52020;
         }
         .blue{
             background: #1771cd;
+        }
+        .textInfo{
+            width: 100%;
+            height: 30px;
+            text-align: center;
+            position: absolute;
+            top: 0px;
+
+            display: flex;
+            justify-content: center;
+        }
+        .text-item{
+            margin-left: 10px;
+            margin-right: 10px;
+            color: white;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -50,6 +67,12 @@
     <div class="menu">
         <div class="menu-item red" onclick="changeCarPaint(1.0)">红色车漆</div>
         <div class="menu-item blue" onclick="changeCarPaint(2.0)">蓝色车漆</div>
+        <div class="menu-item" onclick="handleUpDown()">引擎盖升/降</div>
+    </div>
+    <div class="textInfo">
+        <div class="text-item tex0Progress">环境贴图是否加载完成:否</div>
+        <div class="text-item modelProgress">'加载模型进度0.0%'</div>
+        <div class="text-item tex1Progress">车灯贴图是否加载完成:否</div>
     </div>
     <script src="./js/util/cuon-matrix.js"></script>
     <script src="./js/parseObj.js"></script>

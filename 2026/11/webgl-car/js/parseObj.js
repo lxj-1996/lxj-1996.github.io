@@ -397,6 +397,17 @@ function readOBJFile(fileName,gl,scale){
                 resolve(onReadOBJFile(request.responseText,fileName,gl,scale))
             }
         }
+        request.onprogress = (event) => {
+            if (event.lengthComputable && event.total > 0) {
+                // 分母已知，可以算出精确百分比
+                const percent = Math.round((event.loaded / event.total) * 100);
+                document.getElementsByClassName('modelProgress')[0].innerHTML = '加载模型进度'+percent+'%';
+                // onProgress(percent, event.loaded, event.total);
+            } else {
+                // 分母未知（如分块传输），只报告已加载字节数
+                // onProgress(null, event.loaded, 0);
+            }
+        };
         request.open('GET',fileName);
         request.send();
     })

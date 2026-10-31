@@ -4,6 +4,8 @@ var g_objDoc = null;
 var currentAngle = [0, 0, 1];
 var g_MvpMatrix = new Matrix4();
 var car_Paint = 2.0;
+var stateUpDown = false;
+var progress = 0.0;
 function main() {
     var canvas = document.getElementById('webgl');
     // 获取绘图上下文
@@ -107,6 +109,7 @@ function main() {
     const envImage = new Image();
     envImage.crossOrigin = 'anonymous';
     envImage.onload = () => {
+        document.getElementsByClassName('tex0Progress')[0].innerHTML = '环境贴图是否加载完成:是';
         gl.bindTexture(gl.TEXTURE_2D, envTexture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, envImage);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -131,6 +134,7 @@ function main() {
         const lampImage = new Image();
         lampImage.crossOrigin = 'anonymous';
         lampImage.onload = () => {
+            document.getElementsByClassName('tex1Progress')[0].innerHTML = '车灯贴图是否加载完成:是';
             gl.bindTexture(gl.TEXTURE_2D, lampTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lampImage);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -155,10 +159,11 @@ function main() {
             gl.useProgram(carProgram);
             gl.uniform1i(carProgram.uEnvMap, 1);// 纹理单元 int
             gl.uniform1f(carProgram.u_carPaint,car_Paint);
-            draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['01引擎盖', '02前翼子板', '03前保险杠', '04后翼子板', '05后保险杠', '06尾箱', '09车门前', '10车门后', '07尾箱上玻璃边框']);
+            draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['02前翼子板', '03前保险杠', '04后翼子板', '05后保险杠', '06尾箱', '09车门前', '10车门后', '07尾箱上玻璃边框']);
             draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['11前门把手', '12后门把手']);
             draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['13车顶中', '14车顶前']);
             draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['33反光镜外壳']);
+            draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['01引擎盖'],false,true);
 
             // 车灯
             gl.useProgram(lampProgram);
@@ -238,7 +243,7 @@ function createEmptyAttayBuffer(gl, a_attribute, num, type) {
     gl.enableVertexAttribArray(a_attribute);
     return buffer
 }
-function draw(gl, model, modelMatrix, mvpMatrix, normalMatrix, program, select = [], useTex = false) {
+function draw(gl, model, modelMatrix, mvpMatrix, normalMatrix, program, select = [], useTex = false,active=false) {
     // 设置点光源颜色
     gl.uniform3f(program.u_LightColor, 0.7, 0.7, 0.7);
     // 设置点光源位置
@@ -251,6 +256,18 @@ function draw(gl, model, modelMatrix, mvpMatrix, normalMatrix, program, select =
     modelMatrix.setRotate(currentAngle[0], 1, 0, 0);
     modelMatrix.rotate(currentAngle[1], 0, 1, 0);
     modelMatrix.scale(currentAngle[2], currentAngle[2], currentAngle[2]);
+    if(active){
+        if(stateUpDown){
+            // 升起
+            progress += 0.01;
+            if(progress>1.0) progress = 1.0;
+        }else{
+            // 落下
+            progress -= 0.01;
+            if(progress<0.0) progress = 0.0;
+        }
+        modelMatrix.translate(0.0,progress,0.0);
+    }
     g_MvpMatrix.multiply(modelMatrix);
     // 逆转置矩阵
     normalMatrix.setInverseOf(modelMatrix);
@@ -301,4 +318,8 @@ function initEventHandlers(canvas) {
 
 function changeCarPaint(val){
     car_Paint = val;
+}
+
+function handleUpDown(){
+    stateUpDown = !stateUpDown;
 }
