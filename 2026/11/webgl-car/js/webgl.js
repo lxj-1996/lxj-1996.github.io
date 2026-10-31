@@ -314,6 +314,30 @@ function initEventHandlers(canvas) {
             currentAngle[2] = Math.min(currentAngle[2] + factor, 2.0);
         }
     })
+
+    canvas.addEventListener('touchstart', function(ev) {
+        var x = ev.clientX, y = ev.clientY;
+        var rect = ev.target.getBoundingClientRect();// 问题二
+        if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
+            lastX = x;
+            lastY = y;
+            dragging = true;
+        }
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', function(ev) { dragging = false });
+    canvas.addEventListener('touchmove',function(ev){
+        if (dragging) {
+            var x = ev.clientX, y = ev.clientY;// 问题一
+            var factor = 100 / canvas.height;
+            var dx = factor * (x - lastX);
+            var dy = factor * (y - lastY);
+            currentAngle[0] = Math.max(Math.min(currentAngle[0] + dy, 90.0), -10.0);
+            currentAngle[1] = currentAngle[1] + dx;
+        }
+        lastX = x;
+        lastY = y;
+    })
 }
 
 function changeCarPaint(val){
