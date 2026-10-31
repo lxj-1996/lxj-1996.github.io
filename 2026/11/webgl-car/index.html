@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html,body{
+            padding: 0px;
+            margin: 0px;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas{
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .menu{
+            width: 100%;
+            height: 50px;
+            position: absolute;
+            z-index: 1;
+            top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+        .menu-item{
+            width: 140px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-right: 10px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .red{
+            background: #c52020;
+        }
+        .blue{
+            background: #1771cd;
+        }
+    </style>
+</head>
+<body onload="main()">
+    <canvas id="webgl"></canvas>
+    <div class="menu">
+        <div class="menu-item red" onclick="changeCarPaint(1.0)">红色车漆</div>
+        <div class="menu-item blue" onclick="changeCarPaint(2.0)">蓝色车漆</div>
+    </div>
+    <script src="./js/util/cuon-matrix.js"></script>
+    <script src="./js/parseObj.js"></script>
+    <script src="./js/shader.js"></script>
+    <script src="./js/webgl.js"></script>
+</body>
+</html>
