@@ -146,7 +146,7 @@ function main() {
         lampImage.src = './resource/4.jpg';
     }, 200)
 
-    readOBJFile('./resource/car.obj', gl, 2).then(res => {
+    readOBJFile('./resource/car.obj', gl, 0.9).then(res => {
         g_objDoc = res;
         // console.log('g_objDoc',g_objDoc)
         // var g_drawingInfo = onReadComplete(gl,zhuangshitiaoModel,g_objDoc,['20前脸进气格栅外框'],zhuangshitiaoProgram);
@@ -316,7 +316,8 @@ function initEventHandlers(canvas) {
     })
 
     canvas.addEventListener('touchstart', function(ev) {
-        var x = ev.clientX, y = ev.clientY;
+        const touch = ev.touches[0] || ev.changedTouches[0];
+        var x = touch.clientX, y = touch.clientY;
         var rect = ev.target.getBoundingClientRect();// 问题二
         if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
             lastX = x;
@@ -328,7 +329,8 @@ function initEventHandlers(canvas) {
     canvas.addEventListener('touchend', function(ev) { dragging = false });
     canvas.addEventListener('touchmove',function(ev){
         if (dragging) {
-            var x = ev.clientX, y = ev.clientY;// 问题一
+            const touch = ev.touches[0] || ev.changedTouches[0];
+            var x = touch.clientX, y = touch.clientY;// 问题一
             var factor = 100 / canvas.height;
             var dx = factor * (x - lastX);
             var dy = factor * (y - lastY);
