@@ -130,23 +130,24 @@ function main() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    setTimeout(() => {
-        const lampImage = new Image();
-        lampImage.crossOrigin = 'anonymous';
-        lampImage.onload = () => {
-            document.getElementsByClassName('tex1Progress')[0].innerHTML = '车灯贴图是否加载完成:是';
-            gl.bindTexture(gl.TEXTURE_2D, lampTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lampImage);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
-        lampImage.src = './resource/4.jpg';
-    }, 200)
+    // setTimeout(() => {
+    //
+    // }, 200)
+    const lampImage = new Image();
+    lampImage.crossOrigin = 'anonymous';
+    lampImage.onload = () => {
+        document.getElementsByClassName('tex1Progress')[0].innerHTML = '车灯贴图是否加载完成:是';
+        gl.bindTexture(gl.TEXTURE_2D, lampTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lampImage);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
+    lampImage.src = './resource/4.jpg';
 
-    readOBJFile('./resource/car.obj', gl, 0.9).then(res => {
+    readOBJFile('./resource/car.obj', gl, 1.3).then(res => {
         g_objDoc = res;
         // console.log('g_objDoc',g_objDoc)
         // var g_drawingInfo = onReadComplete(gl,zhuangshitiaoModel,g_objDoc,['20前脸进气格栅外框'],zhuangshitiaoProgram);
@@ -157,7 +158,11 @@ function main() {
             gl.depthMask(true);
             // 汽车主体部分
             gl.useProgram(carProgram);
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, envTexture);
             gl.uniform1i(carProgram.uEnvMap, 1);// 纹理单元 int
+
             gl.uniform1f(carProgram.u_carPaint,car_Paint);
             draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['02前翼子板', '03前保险杠', '04后翼子板', '05后保险杠', '06尾箱', '09车门前', '10车门后', '07尾箱上玻璃边框']);
             draw(gl, carModel, modelMatrix, mvpMatrix, normalMatrix, carProgram, ['11前门把手', '12后门把手']);
@@ -167,7 +172,11 @@ function main() {
 
             // 车灯
             gl.useProgram(lampProgram);
+
+            gl.activeTexture(gl.TEXTURE2);
+            gl.bindTexture(gl.TEXTURE_2D, lampTexture);
             gl.uniform1i(lampProgram.lampTex, 2)// 纹理单元
+
             draw(gl, lampModel, modelMatrix, mvpMatrix, normalMatrix, lampProgram, ['17前车灯', '18后车灯中', '19后车灯外'], true);
             // 装饰条(切换着色器程序)
 
