@@ -111,10 +111,11 @@ var ZHUANGSHITIAO_VSHADER_SOURCE = `#version 300 es
     uniform mat4 u_ModelMatrix;// 模型矩阵
     uniform mat4 u_NormalMatrix;// 法线矩阵
     
-    
+    uniform mat4 u_MvpMatrixFromLight;// 光源处的视角矩阵
     out vec4 v_Color;
     out vec3 v_Normal;
     out vec3 v_Position;
+    out vec4 v_PositionFromLight;
     void main(){
         gl_Position = u_MvpMatrix * a_Position;
         v_Color = a_Color;
@@ -122,6 +123,7 @@ var ZHUANGSHITIAO_VSHADER_SOURCE = `#version 300 es
         v_Position = vec3(u_ModelMatrix*a_Position);
         // 经过矩阵变换后的法线
         v_Normal = normalize(vec3(u_NormalMatrix*a_Normal));
+        v_PositionFromLight = u_MvpMatrixFromLight * a_Position;
     }
 `
 // 片元着色器
@@ -130,10 +132,12 @@ var ZHUANGSHITIAO_FSHADER_SOURCE = `#version 300 es
     uniform vec3 u_LightColor;// 光线的颜色
     uniform vec3 u_LightPosition;// 点光源的位置
     uniform sampler2D uEnvMap;// 反射采样贴图
+    uniform sampler2D shadowMap;// 阴影贴图
     uniform float u_Style;
     in vec4 v_Color;
     in vec3 v_Normal;
     in vec3 v_Position;
+    in vec4 v_PositionFromLight;
     
     out vec4 fragColor;
         // 天空颜色
@@ -155,6 +159,12 @@ var ZHUANGSHITIAO_FSHADER_SOURCE = `#version 300 es
         float u = atan(dir.z,dir.x)/(2.0*PI)+0.5;
         float v = asin(clamp(dir.y,-1.0,1.0))/PI + 0.5;
         return vec2(u,1.0 - v);// v翻转，因为图片通常从上到下
+    }
+    
+    float unpackDepth(const in vec4 rgbaDepth){
+        const vec4 bitShift = vec4(1.0,1.0/256.0,1.0/(256.0*256.0),1.0/(256.0*256.0*256.0));
+        float depth = dot(rgbaDepth,bitShift);
+        return depth;
     }
     void main(){
         // 法线插值后还需要再归一化一下，
@@ -267,6 +277,14 @@ var ZHUANGSHITIAO_FSHADER_SOURCE = `#version 300 es
                 color.rgb = v_Color.rgb;
                 fragColor = vec4(pow(color,vec3(1.0/2.2)),0.1);
             }
+        }else if(u_Style == 9.0){
+            color = vec3(1.0,1.0,1.0);
+            vec3 shadowCoord = (v_PositionFromLight.xyz/v_PositionFromLight.w)/2.0 + 0.5;
+            vec4 rgbaDepth = texture(shadowMap,shadowCoord.xy);
+            // float depth = rgbaDepth.r;
+            float depth = unpackDepth(rgbaDepth);
+            float visibility = (shadowCoord.z >depth+0.0015)?0.1:0.3;
+            fragColor = vec4(pow(color*visibility,vec3(1.0/2.2)),v_Color.a);
         }else{
                         // 颜色映射
             color = acesFilmic(color);
@@ -327,5 +345,26 @@ var LAMP_FSHADER_SOURCE = `#version 300 es
 
         // fragColor = vec4(diffuse,v_Color.a);
         fragColor = color;
+    }
+`
+// 阴影贴图着色器
+var SHADER_VSHADER_SOURCE = `#version 300 es
+    in vec4 a_Position;
+    uniform mat4 u_MvpMatrix;
+    void main(){
+        gl_Position = u_MvpMatrix * a_Position;
+    }
+`
+
+var SHADOW_FSHADER_SOURCE = `#version 300 es
+    precision mediump float;
+    out vec4 fragColor;
+    void main(){
+        // fragColor = vec4(gl_FragCoord.z,gl_FragCoord.z,gl_FragCoord.z,1.0);
+        const vec4 bitShift = vec4(1.0,256.0,256.0*256.0,256.0*256.0*256.0);
+        const vec4 bitMask = vec4(1.0/256.0,1.0/256.0,1.0/256.0,0.0);
+        vec4 rgbaDepth = fract(gl_FragCoord.z * bitShift);
+        rgbaDepth -= rgbaDepth.gbaa * bitMask;
+        fragColor = rgbaDepth;
     }
 `

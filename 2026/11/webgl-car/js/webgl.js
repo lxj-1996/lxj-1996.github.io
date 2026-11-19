@@ -1,6 +1,8 @@
 // 光点的位置
 var light_X = 2.0, light_Y = 7.0, light_Z = 10.0;
 var g_objDoc = null;
+var OFFSCREEN_WIDTH = 2048,OFFSCREEN_HEIGHT = 2048;
+var shadow_MvpMatrix = new Matrix4();
 var currentAngle = [0, 0, 1];
 var g_MvpMatrix = new Matrix4();
 var car_Paint = 2.0;
@@ -43,11 +45,13 @@ function main() {
     zhuangshitiaoProgram.u_MvpMatrix = gl.getUniformLocation(zhuangshitiaoProgram, 'u_MvpMatrix');
     zhuangshitiaoProgram.u_ModelMatrix = gl.getUniformLocation(zhuangshitiaoProgram, 'u_ModelMatrix');
     zhuangshitiaoProgram.u_NormalMatrix = gl.getUniformLocation(zhuangshitiaoProgram, 'u_NormalMatrix');
+    zhuangshitiaoProgram.u_MvpMatrixFromLight = gl.getUniformLocation(zhuangshitiaoProgram, 'u_MvpMatrixFromLight');
 
     zhuangshitiaoProgram.u_LightColor = gl.getUniformLocation(zhuangshitiaoProgram, 'u_LightColor');
     zhuangshitiaoProgram.u_LightPosition = gl.getUniformLocation(zhuangshitiaoProgram, 'u_LightPosition');
     zhuangshitiaoProgram.u_Style = gl.getUniformLocation(zhuangshitiaoProgram, 'u_Style');
     zhuangshitiaoProgram.uEnvMap = gl.getUniformLocation(zhuangshitiaoProgram, 'uEnvMap');
+    zhuangshitiaoProgram.shadowMap = gl.getUniformLocation(zhuangshitiaoProgram, 'shadowMap');
     // 初始化空的缓冲区对象
     var zhuangshitiaoModel = initVertexBuffer(gl, zhuangshitiaoProgram);
 
@@ -68,6 +72,21 @@ function main() {
     // 初始化空的缓冲区对象
     var lampModel = initVertexBuffer(gl, lampProgram, true);
 
+    // 阴影贴图着色器
+    var shadowProgram = createProgram(gl, SHADER_VSHADER_SOURCE, SHADOW_FSHADER_SOURCE);
+    shadowProgram.a_Position = gl.getAttribLocation(shadowProgram, 'a_Position');
+    shadowProgram.u_MvpMatrix = gl.getUniformLocation(shadowProgram, 'u_MvpMatrix');
+    // 初始化阴影贴图需要用到的缓冲区
+    var shadowModel = initVertexBuffer(gl, shadowProgram, false,true);
+    // 帧缓冲区
+    var fbo = initFramebufferObject(gl);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D,fbo.texture);
+
+    // 阴影贴图着色器 视图投影矩阵(在光源的视角下) 光看不见的地方就是阴影部分
+    var viewProjMatrixFromLight = new Matrix4();
+    viewProjMatrixFromLight.setPerspective(70.0,OFFSCREEN_WIDTH/OFFSCREEN_HEIGHT,1.0,100.0);
+    viewProjMatrixFromLight.lookAt(light_X,light_Y,light_Z,0.0,0.0,0.0,0.0,1.0,0.0);
 
     // 设置清空缓冲区颜色
     gl.clearColor(0.3, 0.3, 0.3, 1.0);
@@ -156,6 +175,18 @@ function main() {
         var tick = function () {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.depthMask(true);
+
+            // 绘制阴影贴图
+            gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
+            gl.viewport(0,0,OFFSCREEN_WIDTH,OFFSCREEN_HEIGHT);
+            gl.useProgram(shadowProgram);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            drawShadowMap(gl,shadowModel,['40地面','02前翼子板', '03前保险杠', '04后翼子板', '05后保险杠', '06尾箱', '09车门前', '10车门后', '07尾箱上玻璃边框'],shadowProgram,modelMatrix,viewProjMatrixFromLight);
+            drawShadowMap(gl,shadowModel,['29轮胎前'],shadowProgram,modelMatrix,viewProjMatrixFromLight);
+            drawShadowMap(gl,shadowModel,['30轮胎后'],shadowProgram,modelMatrix,viewProjMatrixFromLight);
+            drawShadowMap(gl,shadowModel,['22前底座','25后底座'],shadowProgram,modelMatrix,viewProjMatrixFromLight);
+            gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+            gl.viewport(0,0,canvas.width,canvas.height);
             // 汽车主体部分
             gl.useProgram(carProgram);
 
@@ -196,6 +227,13 @@ function main() {
             draw(gl, zhuangshitiaoModel, modelMatrix, mvpMatrix, normalMatrix, zhuangshitiaoProgram, ['26排气', '27轮毂前', '28轮毂后']);
             gl.uniform1f(zhuangshitiaoProgram.u_Style, 6.0);// float
             draw(gl, zhuangshitiaoModel, modelMatrix, mvpMatrix, normalMatrix, zhuangshitiaoProgram, ['34反光镜镜片']);
+
+            // 地面的车辆投影
+            gl.uniformMatrix4fv(zhuangshitiaoProgram.u_MvpMatrixFromLight,false,shadow_MvpMatrix.elements);
+            gl.uniform1i(zhuangshitiaoProgram.shadowMap,3);
+            gl.uniform1f(zhuangshitiaoProgram.u_Style, 9.0);// float
+            draw(gl, zhuangshitiaoModel, modelMatrix, mvpMatrix, normalMatrix, zhuangshitiaoProgram, ['40地面']);
+
             // 关闭深度写入，但保持深度测试开启，这样不透明物体会遮挡透明物体，透明物体不会遮挡不透明物体，透明物体内部之间互相混合
             gl.depthMask(false);
             // 开启混合
@@ -205,6 +243,7 @@ function main() {
             draw(gl, zhuangshitiaoModel, modelMatrix, mvpMatrix, normalMatrix, zhuangshitiaoProgram, ['35汽车玻璃侧面前', '36汽车玻璃侧面中', '37汽车玻璃侧面后', '39汽车玻璃上', '08尾箱上玻璃']);
             gl.uniform1f(zhuangshitiaoProgram.u_Style, 8.0);// float
             draw(gl, zhuangshitiaoModel, modelMatrix, mvpMatrix, normalMatrix, zhuangshitiaoProgram, ['38汽车玻璃前']);
+            gl.disable(gl.BLEND);
             requestAnimationFrame(tick, canvas);
         }
         tick();
@@ -229,13 +268,17 @@ function loadShader(gl, type, source) {
     return shader;
 }
 
-function initVertexBuffer(gl, program, useTex = false) {
+function initVertexBuffer(gl, program, useTex = false,isShadow = false) {
     // 添加缓冲区对象
     var o = new Object();
 
     o.vertexBuffer = createEmptyAttayBuffer(gl, program.a_Position, 3, gl.FLOAT);
-    o.colorBuffer = createEmptyAttayBuffer(gl, program.a_Color, 4, gl.FLOAT);
-    o.normalBuffer = createEmptyAttayBuffer(gl, program.a_Normal, 3, gl.FLOAT);
+    if(!isShadow){
+        o.colorBuffer = createEmptyAttayBuffer(gl, program.a_Color, 4, gl.FLOAT);
+        o.normalBuffer = createEmptyAttayBuffer(gl, program.a_Normal, 3, gl.FLOAT);
+    }
+
+
     if (useTex) {
         o.texCoordBuffer = createEmptyAttayBuffer(gl, program.a_TexCoord, 2, gl.FLOAT);
     }
@@ -251,6 +294,16 @@ function createEmptyAttayBuffer(gl, a_attribute, num, type) {
     gl.vertexAttribPointer(a_attribute, num, type, false, 0, 0);
     gl.enableVertexAttribArray(a_attribute);
     return buffer
+}
+function drawShadowMap(gl,model,select,program,modelMatrix,mvpMatrix){
+    var g_drawingInfo = onReadComplete(gl, model, g_objDoc, select, program, false,true);
+    shadow_MvpMatrix.set(mvpMatrix);
+    modelMatrix.setRotate(currentAngle[0], 1, 0, 0);
+    modelMatrix.rotate(currentAngle[1], 0, 1, 0);
+    modelMatrix.scale(currentAngle[2], currentAngle[2], currentAngle[2]);
+    shadow_MvpMatrix.multiply(modelMatrix);
+    gl.uniformMatrix4fv(program.u_MvpMatrix,false,shadow_MvpMatrix.elements);
+    gl.drawElements(gl.TRIANGLES, g_drawingInfo.indices.length, gl.UNSIGNED_SHORT, 0)
 }
 function draw(gl, model, modelMatrix, mvpMatrix, normalMatrix, program, select = [], useTex = false,active=false) {
     // 设置点光源颜色

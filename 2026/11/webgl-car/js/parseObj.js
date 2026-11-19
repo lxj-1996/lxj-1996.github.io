@@ -419,23 +419,25 @@ function  onReadOBJFile(fileString,fileName,gl,scale){
     return objDoc
 }
 
-function onReadComplete(gl,model,objDoc,objName = [],program,useTex=false){
+function onReadComplete(gl,model,objDoc,objName = [],program,useTex=false,isShadow = false){
     var drawingInfo = objDoc.getDrawingInfo(objName,useTex);
 
     // 坐标
     gl.bindBuffer(gl.ARRAY_BUFFER,model.vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER,drawingInfo.vertices,gl.STATIC_DRAW);
     gl.vertexAttribPointer(program.a_Position,3,gl.FLOAT,false,0,0);
+    if(!isShadow){
+        // 法线
+        gl.bindBuffer(gl.ARRAY_BUFFER,model.normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER,drawingInfo.normals,gl.STATIC_DRAW);
+        gl.vertexAttribPointer(program.a_Normal,3,gl.FLOAT,false,0,0);
 
-    // 法线
-    gl.bindBuffer(gl.ARRAY_BUFFER,model.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER,drawingInfo.normals,gl.STATIC_DRAW);
-    gl.vertexAttribPointer(program.a_Normal,3,gl.FLOAT,false,0,0);
+        // 材质颜色
+        gl.bindBuffer(gl.ARRAY_BUFFER,model.colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER,drawingInfo.colors,gl.STATIC_DRAW);
+        gl.vertexAttribPointer(program.a_Color,4,gl.FLOAT,false,0,0);
+    }
 
-    // 材质颜色
-    gl.bindBuffer(gl.ARRAY_BUFFER,model.colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER,drawingInfo.colors,gl.STATIC_DRAW);
-    gl.vertexAttribPointer(program.a_Color,4,gl.FLOAT,false,0,0);
     // uv坐标
     if(useTex){
         gl.bindBuffer(gl.ARRAY_BUFFER,model.texCoordBuffer);
